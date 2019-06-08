@@ -255,10 +255,10 @@ public class BaseRequestConfig<T>  implements Serializable {
         return (T)this;
     }
 
-    public T addQueryParameters(Map<String, List<Object>> formParameterMap) {
-        if (formParameterMap != null) {
-            for (String name : formParameterMap.keySet()) {
-                List<Object> valueList = formParameterMap.get(name);
+    public T addQueryParameters(Map<String, List<Object>> queryParameterMap) {
+        if (queryParameterMap != null) {
+            for (String name : queryParameterMap.keySet()) {
+                List<Object> valueList = queryParameterMap.get(name);
                 if (valueList != null && !valueList.isEmpty()) {
                     addQueryParameter(name, valueList.toArray(new Object[valueList.size()]));
                 }
@@ -267,10 +267,10 @@ public class BaseRequestConfig<T>  implements Serializable {
         return (T)this;
     }
 
-    public T setQueryParameters(Map<String, List<Object>> formParameterMap) {
-        if (formParameterMap != null) {
-            for (String name : formParameterMap.keySet()) {
-                List<Object> valueList = formParameterMap.get(name);
+    public T setQueryParameters(Map<String, List<Object>> queryParameterMap) {
+        if (queryParameterMap != null) {
+            for (String name : queryParameterMap.keySet()) {
+                List<Object> valueList = queryParameterMap.get(name);
                 if (valueList != null && !valueList.isEmpty()) {
                     setQueryParameter(name, valueList.toArray(new Object[valueList.size()]));
                 }
