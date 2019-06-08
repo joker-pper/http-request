@@ -34,67 +34,53 @@ public class ZRequest {
 
     public PResponse doGet(GetRequestConfig requestConfig) throws IOException {
         HttpGet httpGet = new HttpGet();
-        resolveRequestConfig(httpGet, requestConfig);
+        resolveBaseRequestConfig(httpGet, requestConfig);
         return getPResponse(httpGet);
     }
 
-
-
     public PResponse doPost(PostRequestConfig requestConfig) throws IOException {
         HttpPost httpPost = new HttpPost();
-        resolveRequestConfig(httpPost, requestConfig);
+        resolveRequestBodyAndFileConfig(httpPost, requestConfig);
         return getPResponse(httpPost);
     }
 
     public PResponse doPut(PutRequestConfig requestConfig) throws IOException {
         HttpPut httpPut = new HttpPut();
-        resolveRequestConfig(httpPut, requestConfig);
+        resolveRequestBodyAndFileConfig(httpPut, requestConfig);
         return getPResponse(httpPut);
     }
 
-
     public PResponse doPatch(PatchRequestConfig requestConfig) throws IOException {
         HttpPatch httpPatch = new HttpPatch();
-        resolveRequestConfig(httpPatch, requestConfig);
+        resolveRequestBodyAndFileConfig(httpPatch, requestConfig);
         return getPResponse(httpPatch);
     }
 
     public PResponse doDelete(DeleteRequestConfig requestConfig) throws IOException  {
         HttpDelete httpDelete = new HttpDelete();
-        resolveRequestConfig(httpDelete, requestConfig);
+        resolveRequestBodyConfig(httpDelete, requestConfig);
         return getPResponse(httpDelete);
     }
 
-
-    protected void resolveRequestConfig(HttpRequestBase requestBase, BaseRequestConfig requestConfig) {
-        resolveRequestConfig(requestBase, requestConfig, true);
-    }
-
-    protected void resolveRequestConfig(HttpRequestBase requestBase, BaseRequestConfig requestConfig, boolean appendFormParams) {
+    protected void resolveBaseRequestConfig(HttpRequestBase requestBase, BaseRequestConfig requestConfig) {
         String url = requestConfig.getUrl();
         ContentType requestContentType = requestConfig.getContentType();
         Charset requestCharset = requestContentType.getCharset();
 
-        List<NameValuePair> formParamList = null;
-
-        if (appendFormParams) {
-            formParamList = ResolveUtils.getFormParamList(requestConfig);
-        }
-
+        List<NameValuePair> queryParamList = ResolveUtils.getQueryParamList(requestConfig);
         //设置请求url
-        requestBase.setURI(ResolveUtils.getURI(url, formParamList, appendFormParams, requestCharset));
+        requestBase.setURI(ResolveUtils.getURI(url, queryParamList, true, requestCharset));
         //设置请求头和超时时间
         setHeaderAndTimeoutRequestConfig(requestBase, requestConfig);
     }
 
-
-    protected void resolveRequestConfig(HttpEntityEnclosingRequestBase requestBase, RequestBodyConfig requestConfig) {
+    protected void resolveRequestBodyConfig(HttpEntityEnclosingRequestBase requestBase, RequestBodyConfig requestConfig) {
         String requestBody = requestConfig.getRequestBody();
         ContentType requestContentType = requestConfig.getContentType();
         Charset requestCharset = requestContentType.getCharset();
 
         boolean hasRequestBody = requestBody != null;
-        resolveRequestConfig(requestBase, requestConfig, hasRequestBody);
+        resolveBaseRequestConfig(requestBase, requestConfig);
 
         if (!hasRequestBody) {
             List<NameValuePair> formParamList = ResolveUtils.getFormParamList(requestConfig);
@@ -108,8 +94,7 @@ public class ZRequest {
         }
     }
 
-
-    protected void resolveRequestConfig(HttpEntityEnclosingRequestBase requestBase, RequestBodyAndFileConfig requestConfig) {
+    protected void resolveRequestBodyAndFileConfig(HttpEntityEnclosingRequestBase requestBase, RequestBodyAndFileConfig requestConfig) {
         Map<String, List<String>> formParameterMap = requestConfig.getFormParameterMap();
         String requestBody = requestConfig.getRequestBody();
         Map<String, List<File>> fileParameterMap = requestConfig.getFileParameterMap();
@@ -122,7 +107,7 @@ public class ZRequest {
         ContentType requestContentType = requestConfig.getContentType();
         Charset requestCharset = requestContentType.getCharset();
 
-        resolveRequestConfig(requestBase, requestConfig, hasRequestBody);
+        resolveBaseRequestConfig(requestBase, requestConfig);
 
         if (!hasFileParameterMap && !hasRequestBody) {
             List<NameValuePair> formParamList = ResolveUtils.getFormParamList(requestConfig);
@@ -136,9 +121,7 @@ public class ZRequest {
                 requestBase.setEntity(stringEntity);
             } else {
                 if (hasFileParameterMap) {
-
                     requestBase.removeHeaders("Content-Type");
-
                     MultipartEntityBuilder builder = MultipartEntityBuilder.create();
                     for (String fileKey : fileParameterMap.keySet()) {
                         List<File> fileList = fileParameterMap.get(fileKey);

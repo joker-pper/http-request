@@ -36,13 +36,12 @@ public class PResponse implements Serializable {
     private boolean isStreaming;
 
 
-
     public String getText() throws IOException {
         return getText(ResolveUtils.getCharset(getContentType()));
     }
 
     public String getText(String charset) throws IOException {
-        return ResolveUtils.toString(getContent(), (int)getContentLength(), Charset.forName(charset));
+        return getText(Charset.forName(charset));
     }
 
     public String getText(Charset charset) throws IOException {

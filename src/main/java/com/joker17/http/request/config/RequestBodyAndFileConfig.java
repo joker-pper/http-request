@@ -1,7 +1,9 @@
 package com.joker17.http.request.config;
 
 import com.joker17.http.request.support.ValidateUtils;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Setter;
 import lombok.ToString;
 
 import java.io.File;
@@ -14,6 +16,7 @@ import java.util.Map;
 @ToString(callSuper = true)
 public class RequestBodyAndFileConfig<T> extends RequestBodyConfig<T> {
 
+    @Setter(value = AccessLevel.NONE)
     private Map<String, List<File>> fileParameterMap = new LinkedHashMap<>(16);
 
     public T addFile(File... files) {

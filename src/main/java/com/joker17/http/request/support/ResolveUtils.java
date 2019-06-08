@@ -27,9 +27,9 @@ public class ResolveUtils {
 
     private static final int DEFAULT_BUFFER_SIZE = 4096;
 
-
     /**
      * 获取处理的url,参数拼接在url后面
+     *
      * @param url
      * @param params 参数 e.g: username=xxx&step=2
      * @return
@@ -64,13 +64,6 @@ public class ResolveUtils {
         return builder.toString();
     }
 
-
-
-
-
-
-
-
     public static int copy(InputStream in, OutputStream out) throws IOException {
         Args.notNull(in, "No InputStream specified");
         Args.notNull(out, "No OutputStream specified");
@@ -79,7 +72,7 @@ public class ResolveUtils {
             byte[] buffer = new byte[4096];
 
             int bytesRead;
-            for(; (bytesRead = in.read(buffer)) != -1; byteCount += bytesRead) {
+            for (; (bytesRead = in.read(buffer)) != -1; byteCount += bytesRead) {
                 out.write(buffer, 0, bytesRead);
             }
             out.flush();
@@ -122,8 +115,7 @@ public class ResolveUtils {
         }
     }
 
-
-    public static ContentType getContentType(final HttpEntity entity, final Charset defaultCharset) throws IOException, ParseException  {
+    public static ContentType getContentType(final HttpEntity entity, final Charset defaultCharset) throws IOException, ParseException {
 
         ContentType contentType = null;
         try {
@@ -155,7 +147,6 @@ public class ResolveUtils {
         return toString(inStream, contentLength, getCharset(contentType));
     }
 
-
     public static Charset getCharset(final ContentType contentType) {
         Charset charset = null;
         if (contentType != null) {
@@ -167,7 +158,6 @@ public class ResolveUtils {
         }
         return charset;
     }
-
 
     public static String toString(
             final InputStream inStream,
@@ -191,7 +181,7 @@ public class ResolveUtils {
             final CharArrayBuffer buffer = new CharArrayBuffer(capacity);
             final char[] tmp = new char[1024];
             int l;
-            while((l = reader.read(tmp)) != -1) {
+            while ((l = reader.read(tmp)) != -1) {
                 buffer.append(tmp, 0, l);
             }
             return buffer.toString();
@@ -200,13 +190,13 @@ public class ResolveUtils {
         }
     }
 
-    public static URI getURI(String url, List<NameValuePair> formParamList, boolean appendFormParams, Charset charset) {
+    public static URI getURI(String url, List<NameValuePair> paramList, boolean appendParams, Charset charset) {
         if (url == null || url.isEmpty()) {
             throw new IllegalArgumentException("uri must not be empty.");
         }
-        if (appendFormParams && formParamList != null && !formParamList.isEmpty()) {
+        if (appendParams && paramList != null && !paramList.isEmpty()) {
             try {
-                String formParamsStr = EntityUtils.toString(new UrlEncodedFormEntity(formParamList, charset));
+                String formParamsStr = EntityUtils.toString(new UrlEncodedFormEntity(paramList, charset));
                 url = resolveUrl(url, formParamsStr);
             } catch (IOException e) {
             }
@@ -215,19 +205,27 @@ public class ResolveUtils {
     }
 
     public static List<NameValuePair> getFormParamList(BaseRequestConfig requestConfig) {
-        List<NameValuePair> formParamList = new ArrayList<>(16);
-        if (requestConfig != null) {
-            Map<String, List<String>> formParameterMap = requestConfig.getFormParameterMap();
-            for (String paramKey : formParameterMap.keySet()) {
-                List<String> paramValueList = formParameterMap.get(paramKey);
-                for (String paramValue : paramValueList) {
-                    formParamList.add(new BasicNameValuePair(paramKey, paramValue));
+        return getNameValuePairList(requestConfig != null ? requestConfig.getFormParameterMap() : null);
+    }
+
+    public static List<NameValuePair> getQueryParamList(BaseRequestConfig requestConfig) {
+        return getNameValuePairList(requestConfig != null ? requestConfig.getQueryParameterMap() : null);
+    }
+
+    public static List<NameValuePair> getNameValuePairList(Map<String, List<String>> parameterMap) {
+        List<NameValuePair> resultList = new ArrayList<>(16);
+        if (parameterMap != null) {
+            for (String paramKey : parameterMap.keySet()) {
+                List<String> paramValueList = parameterMap.get(paramKey);
+                if (paramValueList != null) {
+                    for (String paramValue : paramValueList) {
+                        resultList.add(new BasicNameValuePair(paramKey, paramValue));
+                    }
                 }
             }
         }
-        return formParamList;
+        return resultList;
     }
-
 
     public static CookieStore getCookieStore(CloseableHttpClient httpClient) {
         if (httpClient != null) {
@@ -238,10 +236,11 @@ public class ResolveUtils {
                 Object result = field.get(httpClient);
                 if (result != null) {
                     if (result instanceof CookieStore) {
-                        return (CookieStore)result;
+                        return (CookieStore) result;
                     }
                 }
-            } catch (Exception e) {  //获取cookieStore失败
+            } catch (Exception e) {
+                //获取cookieStore失败
                 e.printStackTrace();
             }
         }

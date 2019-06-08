@@ -18,7 +18,14 @@ public class BaseRequestConfig<T>  implements Serializable {
     private List<String> headerValueList = new ArrayList<>(16);
 
     /**
-     * 表单请求参数
+     * 查询参数
+     */
+    @Setter(value = AccessLevel.NONE)
+    private Map<String, List<String>> queryParameterMap = new LinkedHashMap<>(16);
+
+
+    /**
+     * 表单参数
      */
     @Setter(value = AccessLevel.NONE)
     private Map<String, List<String>> formParameterMap = new LinkedHashMap<>(16);
@@ -128,24 +135,28 @@ public class BaseRequestConfig<T>  implements Serializable {
 
 
 
-
-    private T resolveFormParameter(String name, boolean add, Object... values) {
+    private T resolveQueryOrFormParameter(String name, boolean add, boolean isQuery, Object... values) {
         ValidateUtils.checkKeyNameNotEmpty(name);
-        List<String> formParameterValueList = formParameterMap.get(name);
-        if (formParameterValueList == null) {
-            formParameterValueList = new ArrayList<>(16);
-            formParameterMap.put(name, formParameterValueList);
+        Map<String, List<String>> parameterMap = isQuery ? queryParameterMap : formParameterMap;
+        List<String> parameterValueList = parameterMap.get(name);
+        if (parameterValueList == null) {
+            parameterValueList = new ArrayList<>(16);
+            parameterMap.put(name, parameterValueList);
         } else {
             if (!add) {
-                formParameterValueList.clear();
+                parameterValueList.clear();
             }
         }
         if (values != null) {
             for (Object value : values) {
-                formParameterValueList.add(value == null ? null : value.toString());
+                parameterValueList.add(value == null ? null : value.toString());
             }
         }
         return (T)this;
+    }
+
+    private T resolveFormParameter(String name, boolean add, Object... values) {
+        return resolveQueryOrFormParameter(name, add, false, values);
     }
 
     public T addFormParameter(String name, Object... values) {
@@ -210,6 +221,75 @@ public class BaseRequestConfig<T>  implements Serializable {
 
     public T clearFormParameters() {
         formParameterMap.clear();
+        return (T)this;
+    }
+
+    private T resolveQueryParameter(String name, boolean add, Object... values) {
+        return resolveQueryOrFormParameter(name, add, true, values);
+    }
+
+    public T addQueryParameter(String name, Object... values) {
+        return resolveQueryParameter(name, true, values);
+    }
+
+    public T setQueryParameter(String name, Object... values) {
+        resolveQueryParameter(name, false, values);
+        return (T)this;
+    }
+
+    public T addQueryParameters(String[] names, Object[] values) {
+        if (names != null && values != null) {
+            for (int i = 0; i < names.length; i++) {
+                addQueryParameter(names[i], values[i]);
+            }
+        }
+        return (T)this;
+    }
+
+    public T setQueryParameters(String[] names, Object[] values) {
+        if (names != null && values != null) {
+            for (int i = 0; i < names.length; i++) {
+                setQueryParameter(names[i], values[i]);
+            }
+        }
+        return (T)this;
+    }
+
+    public T addQueryParameters(Map<String, List<Object>> formParameterMap) {
+        if (formParameterMap != null) {
+            for (String name : formParameterMap.keySet()) {
+                List<Object> valueList = formParameterMap.get(name);
+                if (valueList != null && !valueList.isEmpty()) {
+                    addQueryParameter(name, valueList.toArray(new Object[valueList.size()]));
+                }
+            }
+        }
+        return (T)this;
+    }
+
+    public T setQueryParameters(Map<String, List<Object>> formParameterMap) {
+        if (formParameterMap != null) {
+            for (String name : formParameterMap.keySet()) {
+                List<Object> valueList = formParameterMap.get(name);
+                if (valueList != null && !valueList.isEmpty()) {
+                    setQueryParameter(name, valueList.toArray(new Object[valueList.size()]));
+                }
+            }
+        }
+        return (T)this;
+    }
+
+    public T clearQueryParameters(String... names) {
+        if (names != null) {
+            for (String name : names) {
+                queryParameterMap.remove(name);
+            }
+        }
+        return (T)this;
+    }
+
+    public T clearQueryParameters() {
+        queryParameterMap.clear();
         return (T)this;
     }
 
