@@ -4,6 +4,7 @@
 ,无需关注过多细节.)
 
 ##函数
+
 `e.g: PResponse response = ZRequest.of().doGet(requestConfig)`
 
 `PResponse doGet(GetRequestConfig requestConfig)`
@@ -17,9 +18,15 @@
 `PResponse doDelete(DeleteRequestConfig requestConfig)`
 
 ###备注
+
 queryParameter -> 拼接到url后面(All)
+
 formParameter  -> 非requestBody时添加(Post,Put,Patch)
+
 requestBody    -> requestBody时添加(Post,Put,Patch,Delete)
+
 fileParameter  -> 非requestBody时添加(Post,Put,Patch)
+
 优先级         -> requestBody > fileParameter > formParameter
+
 存在requestBody时fileParameter及formParameter会被忽略
