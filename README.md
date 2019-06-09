@@ -46,3 +46,6 @@ fileParameter    -> 非requestBody时添加(Post,Put,Patch)
 优先级           -> requestBody > fileParameter > formParameter
 
 存在requestBody时fileParameter及formParameter会被忽略
+
+> 测试所对应server demo
+[http-request-server-demo](https://github.com/joker-pper/http-request-server-demo.git)
