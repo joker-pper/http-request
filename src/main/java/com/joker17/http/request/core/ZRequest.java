@@ -1,6 +1,7 @@
 package com.joker17.http.request.core;
 
 import com.joker17.http.request.config.*;
+import com.joker17.http.request.support.HttpClientUtils;
 import com.joker17.http.request.support.ResolveUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.Header;
@@ -16,7 +17,6 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
 
 import java.io.File;
@@ -28,9 +28,20 @@ import java.util.Map;
 @RequiredArgsConstructor(staticName = "of")
 public class ZRequest {
 
-    private CloseableHttpClient httpClient = HttpClients.createDefault();
+    private CloseableHttpClient httpClient = HttpClientUtils.getIgnoreVerifySSLHttpClient();
 
     private CookieStore cookieStore = null;
+
+    /**
+     * 自定义httpClient
+     * @param httpClient
+     * @return
+     */
+    public ZRequest setHttpClient(CloseableHttpClient httpClient) {
+        this.httpClient = httpClient;
+        this.cookieStore = null;
+        return this;
+    }
 
     public PResponse doGet(GetRequestConfig requestConfig) throws IOException {
         HttpGet httpGet = new HttpGet();
