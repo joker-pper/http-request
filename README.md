@@ -47,5 +47,8 @@ fileParameter    -> 非requestBody时添加(Post,Put,Patch)
 
 存在requestBody时fileParameter及formParameter会被忽略
 
-> 测试所对应server demo
+> 其他
+
 [http-request-server-demo](https://github.com/joker-pper/http-request-server-demo.git)
+
+[test文件](https://github.com/joker-pper/http-request/blob/master/src/main/test/java/com/joker17/http/request/core/ZRequestTest.java)

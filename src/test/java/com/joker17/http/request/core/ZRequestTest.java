@@ -104,7 +104,7 @@ public class ZRequestTest {
     public void testFileAndFormParameter() throws IOException {
         String baseUrl = "http://localhost:8080/api/file/and/form/parameter/test";
         String body = "{\"username\": \"test\"}";
-        File file = new File(String.format("%s/src/main/test/%s/20161452.jpg", userDir, this.getClass().getPackage().getName().replace(".", "/")));
+        File file = new File(String.format("%s/src/test/java/%s/20161452.jpg", userDir, this.getClass().getPackage().getName().replace(".", "/")));
         ZRequest request = ZRequest.of();
         PResponse response = request.doPost(PostRequestConfig.of()
                 .setUrl(baseUrl + "/post")
