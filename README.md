@@ -51,4 +51,4 @@ fileParameter    -> 非requestBody时添加(Post,Put,Patch)
 
 [http-request-server-demo](https://github.com/joker-pper/http-request-server-demo.git)
 
-[test文件](https://github.com/joker-pper/http-request/blob/master/src/main/test/java/com/joker17/http/request/core/ZRequestTest.java)
+[test文件](https://github.com/joker-pper/http-request/blob/master/src/test/java/com/joker17/http/request/core/ZRequestTest.java)
