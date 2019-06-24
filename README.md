@@ -5,7 +5,8 @@
  - 通过链式进行请求参数的设置,获取http方法对应的请求执行结果
 
 > 引入方式
-`
+
+
 
     <repositories>
         <repository>
@@ -22,7 +23,7 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>       
-`
+
 
 
 
