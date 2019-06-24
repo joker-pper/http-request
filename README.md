@@ -4,6 +4,27 @@
  - 使用httpclient对部分常用方式进行封装,无需关注过多细节
  - 通过链式进行请求参数的设置,获取http方法对应的请求执行结果
 
+> 引入方式
+`
+
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+    
+ 
+    <dependencies>
+        <dependency>
+            <groupId>com.joker17</groupId>
+            <artifactId>http-request</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>       
+`
+
+
 
 ----------
 
