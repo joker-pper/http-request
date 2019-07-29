@@ -18,7 +18,7 @@
  
     <dependencies>
         <dependency>
-            <groupId>com.joker17</groupId>
+            <groupId>com.github.joker-pper</groupId>
             <artifactId>http-request</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
