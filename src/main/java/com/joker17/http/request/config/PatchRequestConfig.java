@@ -1,5 +1,6 @@
 package com.joker17.http.request.config;
 
+import com.joker17.http.request.core.HttpConstants;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
@@ -11,5 +12,8 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class PatchRequestConfig extends RequestBodyAndFileConfig<PatchRequestConfig> {
 
+    {
+        method = HttpConstants.PATCH_METHOD;
+    }
 
 }

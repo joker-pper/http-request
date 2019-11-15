@@ -13,16 +13,16 @@ import java.util.*;
 public class BaseRequestConfig<T>  implements Serializable {
 
     @Setter(value = AccessLevel.NONE)
-    private List<String> headerKeyList = new ArrayList<>(16);
+    protected String method = "UNKNOWN";
+
     @Setter(value = AccessLevel.NONE)
-    private List<String> headerValueList = new ArrayList<>(16);
+    private Map<String, List<String>> headerParameterMap = new LinkedHashMap<>(16);
 
     /**
      * 查询参数
      */
     @Setter(value = AccessLevel.NONE)
     private Map<String, List<String>> queryParameterMap = new LinkedHashMap<>(16);
-
 
     /**
      * 表单参数
@@ -75,7 +75,6 @@ public class BaseRequestConfig<T>  implements Serializable {
     }
 
 
-
     public T addHeaders(String headerKeys[], String headerValues[]) {
         if (headerKeys != null && headerValues != null) {
             for (int i = 0; i < headerKeys.length; i++) {
@@ -85,20 +84,32 @@ public class BaseRequestConfig<T>  implements Serializable {
         return (T)this;
     }
 
-    public T addHeader(String headerKey, String headerValue) {
+    public T addHeader(String headerKey, String ... headerValue) {
         ValidateUtils.checkKeyNameNotEmpty(headerKey);
         if (headerKey.equalsIgnoreCase("Content-Type")) {
             throw new IllegalArgumentException("not support add header Content-Type!");
         }
-        headerKeyList.add(headerKey);
-        headerValueList.add(headerValue);
+
+        List<String> headerValues = headerParameterMap.get(headerKey);
+        if (headerValues == null) {
+            headerValues = new ArrayList<>(16);
+            headerParameterMap.put(headerKey, headerValues);
+        }
+
+        if (headerValue != null) {
+            for (String currentValue : headerValue) {
+                headerValues.add(currentValue);
+            }
+        }
+
         return (T)this;
     }
 
     public T addHeaders(Map<String, String> headersValueMap) {
         if (headersValueMap != null) {
-            for (String key : headersValueMap.keySet()) {
-                String value = headersValueMap.get(key);
+            for (Map.Entry<String, String> entry : headersValueMap.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
                 addHeader(key, value);
             }
         }
@@ -107,27 +118,14 @@ public class BaseRequestConfig<T>  implements Serializable {
 
 
     public T clearHeaders() {
-        headerKeyList.clear();
-        headerValueList.clear();
+        headerParameterMap.clear();
         return (T)this;
     }
 
     public T clearHeaders(String... headerKeys) {
         if (headerKeys != null) {
-            Set<Integer> indexList = new HashSet<>(16);
             for (String headerKey : headerKeys) {
-                int index = 0;
-                for (String key : headerKeyList) {
-                    if (key.equals(headerKey)) {
-                        indexList.add(index);
-                        break;
-                    }
-                    index++;
-                }
-            }
-            for (Integer index : indexList) {
-                headerKeyList.remove(index);
-                headerValueList.remove(index);
+                headerParameterMap.remove(headerKey);
             }
         }
         return (T)this;
@@ -188,8 +186,9 @@ public class BaseRequestConfig<T>  implements Serializable {
 
     public T addFormParameters(Map<String, List<Object>> formParameterMap) {
         if (formParameterMap != null) {
-            for (String name : formParameterMap.keySet()) {
-                List<Object> valueList = formParameterMap.get(name);
+            for (Map.Entry<String, List<Object>> entry : formParameterMap.entrySet()) {
+                String name = entry.getKey();
+                List<Object> valueList = entry.getValue();
                 if (valueList != null && !valueList.isEmpty()) {
                     addFormParameter(name, valueList.toArray(new Object[valueList.size()]));
                 }
@@ -200,8 +199,9 @@ public class BaseRequestConfig<T>  implements Serializable {
 
     public T setFormParameters(Map<String, List<Object>> formParameterMap) {
         if (formParameterMap != null) {
-            for (String name : formParameterMap.keySet()) {
-                List<Object> valueList = formParameterMap.get(name);
+            for (Map.Entry<String, List<Object>> entry : formParameterMap.entrySet()) {
+                String name = entry.getKey();
+                List<Object> valueList = entry.getValue();
                 if (valueList != null && !valueList.isEmpty()) {
                     setFormParameter(name, valueList.toArray(new Object[valueList.size()]));
                 }
@@ -257,8 +257,9 @@ public class BaseRequestConfig<T>  implements Serializable {
 
     public T addQueryParameters(Map<String, List<Object>> queryParameterMap) {
         if (queryParameterMap != null) {
-            for (String name : queryParameterMap.keySet()) {
-                List<Object> valueList = queryParameterMap.get(name);
+            for (Map.Entry<String, List<Object>> entry : queryParameterMap.entrySet()) {
+                String name = entry.getKey();
+                List<Object> valueList = entry.getValue();
                 if (valueList != null && !valueList.isEmpty()) {
                     addQueryParameter(name, valueList.toArray(new Object[valueList.size()]));
                 }
@@ -269,13 +270,15 @@ public class BaseRequestConfig<T>  implements Serializable {
 
     public T setQueryParameters(Map<String, List<Object>> queryParameterMap) {
         if (queryParameterMap != null) {
-            for (String name : queryParameterMap.keySet()) {
-                List<Object> valueList = queryParameterMap.get(name);
+            for (Map.Entry<String, List<Object>> entry : queryParameterMap.entrySet()) {
+                String name = entry.getKey();
+                List<Object> valueList = entry.getValue();
                 if (valueList != null && !valueList.isEmpty()) {
                     setQueryParameter(name, valueList.toArray(new Object[valueList.size()]));
                 }
             }
         }
+
         return (T)this;
     }
 

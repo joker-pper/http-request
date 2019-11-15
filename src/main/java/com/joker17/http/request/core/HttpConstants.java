@@ -19,4 +19,11 @@ public class HttpConstants {
     public static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
     public static final String MULTIPART_FORM_DATA = "multipart/form-data";
 
+
+    public static final String GET_METHOD = "GET";
+    public static final String POST_METHOD = "POST";
+    public static final String PUT_METHOD = "PUT";
+    public static final String PATCH_METHOD = "PATCH";
+    public static final String DELETE_METHOD = "DELETE";
+
 }

@@ -1,5 +1,6 @@
 package com.joker17.http.request.config;
 
+import com.joker17.http.request.core.HttpConstants;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
@@ -12,5 +13,8 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class PutRequestConfig extends RequestBodyAndFileConfig<PutRequestConfig> {
 
+    {
+        method = HttpConstants.PUT_METHOD;
+    }
 
 }

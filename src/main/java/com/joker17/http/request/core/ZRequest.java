@@ -134,23 +134,27 @@ public class ZRequest {
                 if (hasFileParameterMap) {
                     requestBase.removeHeaders("Content-Type");
                     MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-                    for (String fileKey : fileParameterMap.keySet()) {
-                        List<File> fileList = fileParameterMap.get(fileKey);
+                    for (Map.Entry<String, List<File>> entry : fileParameterMap.entrySet()) {
+                        String fileKey = entry.getKey();
+                        List<File> fileList = entry.getValue();
                         for (File file : fileList) {
                             //相当于<input type="file" name="fileKey"/>
                             FileBody fileBody = new FileBody(file);
                             builder.addPart(fileKey, fileBody);
                         }
                     }
+
                     if (hasFormParameter) {
-                        for (String paramKey : formParameterMap.keySet()) {
-                            List<String> paramValueList = formParameterMap.get(paramKey);
+                        for (Map.Entry<String, List<String>> entry : formParameterMap.entrySet()) {
+                            String paramKey = entry.getKey();
+                            List<String> paramValueList = entry.getValue();
                             for (String paramValue : paramValueList) {
                                 //相当于<input type="text" name="paramKey"/>
                                 StringBody stringBody = new StringBody(paramValue, ContentType.create(ContentType.TEXT_PLAIN.getMimeType(), requestCharset));
                                 builder.addPart(paramKey, stringBody);
                             }
                         }
+
                     }
                     requestBase.setEntity(builder.build());
                 }
@@ -161,11 +165,12 @@ public class ZRequest {
     protected void setHeaderAndTimeoutRequestConfig(HttpRequestBase requestBase, BaseRequestConfig requestConfig) {
         requestBase.setConfig(getTimeoutRequestConfig(requestConfig.getSocketTimeout(), requestConfig.getConnectTimeout()));
         //设置请求头
-        List<String> headerKeyList = requestConfig.getHeaderKeyList();
-        List<String> headerValueList = requestConfig.getHeaderValueList();
-        if (!headerKeyList.isEmpty()) {
-            for (int i = 0; i < headerKeyList.size(); i++) {
-                requestBase.addHeader(new BasicHeader(headerKeyList.get(i), headerValueList.get(i)));
+        Map<String, List<String>> headerParameterMap = requestConfig.getHeaderParameterMap();
+        for (Map.Entry<String, List<String>> entry : headerParameterMap.entrySet()) {
+            String headerKey = entry.getKey();
+            List<String> headerValues = entry.getValue();
+            for (String headerValue : headerValues) {
+                requestBase.addHeader(new BasicHeader(headerKey, headerValue));
             }
         }
         requestBase.setHeader("Content-Type", requestConfig.getContentType().toString());
