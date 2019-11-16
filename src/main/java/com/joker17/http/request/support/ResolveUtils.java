@@ -69,7 +69,7 @@ public class ResolveUtils {
         Args.notNull(out, "No OutputStream specified");
         try {
             int byteCount = 0;
-            byte[] buffer = new byte[4096];
+            byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
 
             int bytesRead;
             for (; (bytesRead = in.read(buffer)) != -1; byteCount += bytesRead) {
@@ -109,7 +109,7 @@ public class ResolveUtils {
         if (in == null) {
             return new byte[0];
         } else {
-            ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+            ByteArrayOutputStream out = new ByteArrayOutputStream(DEFAULT_BUFFER_SIZE);
             copy(in, out);
             return out.toByteArray();
         }
@@ -215,8 +215,9 @@ public class ResolveUtils {
     public static List<NameValuePair> getNameValuePairList(Map<String, List<String>> parameterMap) {
         List<NameValuePair> resultList = new ArrayList<>(16);
         if (parameterMap != null) {
-            for (String paramKey : parameterMap.keySet()) {
-                List<String> paramValueList = parameterMap.get(paramKey);
+            for (Map.Entry<String, List<String>> entry : parameterMap.entrySet()) {
+                String paramKey = entry.getKey();
+                List<String> paramValueList = entry.getValue();
                 if (paramValueList != null) {
                     for (String paramValue : paramValueList) {
                         resultList.add(new BasicNameValuePair(paramKey, paramValue));

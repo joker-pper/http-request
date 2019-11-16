@@ -1,11 +1,16 @@
 package com.joker17.http.request.core;
 
 import com.joker17.http.request.config.*;
+import com.joker17.http.request.support.ResolveUtils;
 import org.apache.http.Header;
+import org.apache.http.entity.ContentType;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 import static org.junit.Assert.*;
 
@@ -68,7 +73,6 @@ public class ZRequestTest {
     }
 
 
-
     @Test
     public void testFormParameter() throws IOException {
         String baseUrl = "http://localhost:8080/api/form/parameter/test";
@@ -96,8 +100,6 @@ public class ZRequestTest {
         System.out.println(response.getText());
 
     }
-
-
 
 
     @Test
@@ -129,4 +131,62 @@ public class ZRequestTest {
 
     }
 
+
+    @Test
+    public void testChunked() throws IOException {
+        ZRequest request = ZRequest.of();
+
+
+        String url = "http://localhost:8080/sys/file/preview/test/8d9ebbda675e4c8b9ced2880198b165a";
+
+        url = "https://dl.360safe.com/360zip_setup_4.0.0.1200.exe";
+
+        PResponse response = request.doHead(HeadRequestConfig.of().setContentType((ContentType) null).setUrl(url));
+
+      /*  System.out.println(response);
+        System.out.println(response.getText(HttpConstants.UTF_8));
+*/
+        long contentLength = response.getContentLength();
+
+        //contentLength = 2443;
+
+        int count = contentLength == -1 ? 1 : 4;
+        long avgLength = contentLength / count;
+
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
+
+        for (int i = 0; i < count; i++) {
+            long start;
+            long end;
+
+            if (i == 0) {
+                start = 0;
+            } else {
+                start = i * avgLength;
+            }
+
+            if (i != count - 1) {
+                end = (i + 1) * avgLength - 1;
+            } else {
+                end = contentLength - 1;
+            }
+
+            response = request.doGet(GetRequestConfig.of().setContentType((ContentType) null).setUrl(url)
+                    .addHeader("Range", String.format("bytes=%s-%s", start, end)));
+            byteArrayOutputStream.write(response.getBody());
+            byteArrayOutputStream.flush();
+
+
+            for (Header header : response.getHttpResponse().getAllHeaders()) {
+                System.out.println(String.format("[Header] %s: %s", header.getName(), header.getValue()));
+            }
+
+            System.out.println("=======================================================");
+        }
+
+        System.out.println(ResolveUtils.toString(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()), byteArrayOutputStream.size(), Charset.forName("UTF-8")));
+
+
+    }
 }

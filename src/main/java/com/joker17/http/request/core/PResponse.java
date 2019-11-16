@@ -1,5 +1,6 @@
 package com.joker17.http.request.core;
 
+import com.joker17.http.request.config.BaseRequestConfig;
 import com.joker17.http.request.support.ResolveUtils;
 import lombok.*;
 import org.apache.http.HttpEntity;
@@ -8,6 +9,7 @@ import org.apache.http.entity.ContentType;
 import java.io.*;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.Locale;
 
 @Data
 @NoArgsConstructor
@@ -25,9 +27,12 @@ public class PResponse implements Serializable {
 
     @Getter(value = AccessLevel.NONE)
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private byte[] body;
 
     private URI uri;
+
+    private Locale locale;
 
     private int statusCode;
     private long contentLength;
@@ -48,16 +53,26 @@ public class PResponse implements Serializable {
         return ResolveUtils.toString(getContent(), (int)getContentLength(), charset);
     }
 
-    public byte[] getBody() {
-        return body == null ? new byte[0] : body;
+    public byte[] getBody() throws IOException {
+        if (body == null) {
+            body = ResolveUtils.copyToByteArray(entity.getContent());
+        }
+        return body;
     }
 
-    public InputStream getContent() {
-        return new ByteArrayInputStream(getBody());
+
+    public InputStream getContent() throws IOException {
+        if (body != null) {
+            return new ByteArrayInputStream(getBody());
+        }
+        return entity.getContent();
     }
 
     public void writeTo(OutputStream outputStream) throws IOException {
-        ResolveUtils.copy(getBody(), outputStream);
+        ResolveUtils.copy(getContent(), outputStream);
     }
+
+
+
 
 }
