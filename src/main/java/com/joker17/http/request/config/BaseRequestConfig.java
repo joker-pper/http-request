@@ -10,7 +10,7 @@ import java.nio.charset.Charset;
 import java.util.*;
 
 @Data
-public class BaseRequestConfig<T>  implements Serializable {
+public class BaseRequestConfig<T> implements Serializable {
 
     @Setter(value = AccessLevel.NONE)
     protected String method = "UNKNOWN";
@@ -37,10 +37,13 @@ public class BaseRequestConfig<T>  implements Serializable {
     private int socketTimeout = -1;
 
     @Setter(value = AccessLevel.NONE)
-    private String url;
+    private ContentType contentType = ContentType.create(HttpConstants.APPLICATION_JSON, HttpConstants.UTF_8);
 
     @Setter(value = AccessLevel.NONE)
-    private ContentType contentType = ContentType.create(HttpConstants.APPLICATION_JSON, HttpConstants.UTF_8);
+    private String userAgent;
+
+    @Setter(value = AccessLevel.NONE)
+    private String url;
 
     public T setConnectTimeout(int connectTimeout) {
         this.connectTimeout = connectTimeout;
@@ -69,11 +72,15 @@ public class BaseRequestConfig<T>  implements Serializable {
         return setContentType(ContentType.create(mimeType, charset));
     }
 
+    public T setUserAgent(String userAgent) {
+        this.userAgent = userAgent;
+        return (T)this;
+    }
+
     public T setUrl(String url) {
         this.url = url;
         return (T)this;
     }
-
 
     public T addHeaders(String headerKeys[], String headerValues[]) {
         if (headerKeys != null && headerValues != null) {
@@ -130,7 +137,6 @@ public class BaseRequestConfig<T>  implements Serializable {
         }
         return (T)this;
     }
-
 
 
     private T resolveQueryOrFormParameter(String name, boolean add, boolean isQuery, Object... values) {

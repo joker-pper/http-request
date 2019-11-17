@@ -4,9 +4,7 @@ import com.joker17.http.request.config.*;
 import com.joker17.http.request.support.HttpClientUtils;
 import com.joker17.http.request.support.ResolveUtils;
 import lombok.RequiredArgsConstructor;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
+import org.apache.http.*;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -43,41 +41,71 @@ public class ZRequest {
         return this;
     }
 
+    public PResponse doHead(HeadRequestConfig requestConfig) throws IOException {
+        return doHead(requestConfig, null);
+    }
+
+    public <P, Z extends HeadRequestConfig> P doHead(Z requestConfig, PResponseHandler<P, Z> handler) throws IOException {
+        HttpHead httpHead = new HttpHead();
+        resolveBaseRequestConfig(httpHead, requestConfig);
+        return resolveResponse(httpHead, requestConfig, handler);
+    }
+
     public PResponse doGet(GetRequestConfig requestConfig) throws IOException {
+        return doGet(requestConfig, null);
+    }
+
+    public <P, Z extends GetRequestConfig> P doGet(Z requestConfig, PResponseHandler<P, Z> handler) throws IOException {
         HttpGet httpGet = new HttpGet();
         resolveBaseRequestConfig(httpGet, requestConfig);
-        return getPResponse(httpGet);
+        return resolveResponse(httpGet, requestConfig, handler);
     }
 
     public PResponse doPost(PostRequestConfig requestConfig) throws IOException {
+        return doPost(requestConfig, null);
+    }
+
+    public <P, Z extends PostRequestConfig> P doPost(Z requestConfig, PResponseHandler<P, Z> handler) throws IOException {
         HttpPost httpPost = new HttpPost();
         resolveRequestBodyAndFileConfig(httpPost, requestConfig);
-        return getPResponse(httpPost);
+        return resolveResponse(httpPost, requestConfig, handler);
     }
 
     public PResponse doPut(PutRequestConfig requestConfig) throws IOException {
+        return doPut(requestConfig, null);
+    }
+
+    public <P, Z extends PutRequestConfig> P doPut(Z requestConfig, PResponseHandler<P, Z> handler) throws IOException {
         HttpPut httpPut = new HttpPut();
         resolveRequestBodyAndFileConfig(httpPut, requestConfig);
-        return getPResponse(httpPut);
+        return resolveResponse(httpPut, requestConfig, handler);
     }
 
     public PResponse doPatch(PatchRequestConfig requestConfig) throws IOException {
+        return doPatch(requestConfig, null);
+    }
+
+    public <P, Z extends PatchRequestConfig> P doPatch(Z requestConfig, PResponseHandler<P, Z> handler) throws IOException {
         HttpPatch httpPatch = new HttpPatch();
         resolveRequestBodyAndFileConfig(httpPatch, requestConfig);
-        return getPResponse(httpPatch);
+        return resolveResponse(httpPatch, requestConfig, handler);
     }
 
     public PResponse doDelete(DeleteRequestConfig requestConfig) throws IOException  {
+        return doDelete(requestConfig, null);
+    }
+
+    public <P, Z extends DeleteRequestConfig> P doDelete(Z requestConfig, PResponseHandler<P, Z> handler) throws IOException {
         HttpDelete httpDelete = new HttpDelete();
         resolveRequestBodyConfig(httpDelete, requestConfig);
-        return getPResponse(httpDelete);
+        return resolveResponse(httpDelete, requestConfig, handler);
     }
+
 
     protected void resolveBaseRequestConfig(HttpRequestBase requestBase, BaseRequestConfig requestConfig) {
         String url = requestConfig.getUrl();
         ContentType requestContentType = requestConfig.getContentType();
-        Charset requestCharset = requestContentType.getCharset();
-
+        Charset requestCharset = requestContentType != null ? requestContentType.getCharset() : HttpConstants.UTF_8;
         List<NameValuePair> queryParamList = ResolveUtils.getQueryParamList(requestConfig);
         //设置请求url
         requestBase.setURI(ResolveUtils.getURI(url, queryParamList, true, requestCharset));
@@ -111,7 +139,6 @@ public class ZRequest {
         Map<String, List<File>> fileParameterMap = requestConfig.getFileParameterMap();
 
         boolean hasRequestBody = requestBody != null;
-
         boolean hasFormParameter = !formParameterMap.isEmpty();
         boolean hasFileParameterMap = !fileParameterMap.isEmpty();
 
@@ -132,7 +159,7 @@ public class ZRequest {
                 requestBase.setEntity(stringEntity);
             } else {
                 if (hasFileParameterMap) {
-                    requestBase.removeHeaders("Content-Type");
+                    requestBase.removeHeaders(HttpHeaders.CONTENT_TYPE);
                     MultipartEntityBuilder builder = MultipartEntityBuilder.create();
                     for (Map.Entry<String, List<File>> entry : fileParameterMap.entrySet()) {
                         String fileKey = entry.getKey();
@@ -165,6 +192,14 @@ public class ZRequest {
     protected void setHeaderAndTimeoutRequestConfig(HttpRequestBase requestBase, BaseRequestConfig requestConfig) {
         requestBase.setConfig(getTimeoutRequestConfig(requestConfig.getSocketTimeout(), requestConfig.getConnectTimeout()));
         //设置请求头
+        ContentType contentType = requestConfig.getContentType();
+        if (contentType != null) {
+            requestBase.setHeader(HttpHeaders.CONTENT_TYPE, contentType.toString());
+        }
+        if (requestConfig.getUserAgent() != null) {
+            requestBase.setHeader(HttpHeaders.USER_AGENT, requestConfig.getUserAgent());
+        }
+        
         Map<String, List<String>> headerParameterMap = requestConfig.getHeaderParameterMap();
         for (Map.Entry<String, List<String>> entry : headerParameterMap.entrySet()) {
             String headerKey = entry.getKey();
@@ -173,7 +208,6 @@ public class ZRequest {
                 requestBase.addHeader(new BasicHeader(headerKey, headerValue));
             }
         }
-        requestBase.setHeader("Content-Type", requestConfig.getContentType().toString());
     }
 
     protected RequestConfig getTimeoutRequestConfig(int socketTimeout, int connectTimeout) {
@@ -181,38 +215,79 @@ public class ZRequest {
         return requestConfig;
     }
 
-
-    protected PResponse getPResponse(HttpUriRequest request) throws IOException {
+    protected <P, Z extends BaseRequestConfig> P resolveResponse(final HttpRequestBase request, final Z requestConfig, PResponseHandler<P, Z> handler) throws IOException {
         CloseableHttpResponse response = null;
-        PResponse presponse = new PResponse();
+        PResponse presponse;
         try {
+            boolean hasHandler = handler != null;
+            if (hasHandler) {
+                handler.beforeExecute(request, requestConfig);
+            }
+
             response = httpClient.execute(request);
 
+            presponse = new PResponse();
             presponse.setUri(request.getURI());
             presponse.setStatusCode(response.getStatusLine().getStatusCode());
             presponse.setHttpResponse(response);
 
             HttpEntity entity = response.getEntity();
+            Header contentEncodingHeader = null;
+            Long contentLength = null;
             if (entity != null) {
                 presponse.setEntity(entity);
-                presponse.setBody(ResolveUtils.copyToByteArray(entity.getContent()));
+                if (!hasHandler) {
+                    //不存在handler时默认设置body内容
+                    presponse.setBody(ResolveUtils.copyToByteArray(entity.getContent()));
+                }
 
-                Header contentType = entity.getContentType();
-                Header contentEncoding = entity.getContentEncoding();
-
-                if (contentType != null) {
+                Header contentTypeHeader = entity.getContentType();
+                if (contentTypeHeader != null) {
                     presponse.setContentType(ContentType.get(entity));
                 }
-                if (contentEncoding != null) {
-                    presponse.setContentEncoding(contentEncoding.toString());
-                }
-
-                presponse.setContentLength(entity.getContentLength());
+                contentEncodingHeader = entity.getContentEncoding();
+                contentLength = entity.getContentLength();
                 presponse.setChunked(entity.isChunked());
                 presponse.setRepeatable(entity.isRepeatable());
                 presponse.setStreaming(entity.isStreaming());
+            } else {
+                Header contentTypeHeader = response.getFirstHeader(HttpHeaders.CONTENT_TYPE);
+
+                if (contentTypeHeader != null) {
+                    presponse.setContentType(ContentType.parse(contentTypeHeader.getValue()));
+                }
+
+                contentEncodingHeader = response.getFirstHeader(HttpHeaders.CONTENT_ENCODING);
+                Header contentLengthHeader = response.getFirstHeader(HttpHeaders.CONTENT_LENGTH);
+                if (contentLengthHeader != null) {
+                    HeaderElement[] elements = contentLengthHeader.getElements();
+                    if (elements != null) {
+                        for (HeaderElement element : elements) {
+                            String name = element.getName();
+                            if (name != null && name.length() > 0) {
+                                try {
+                                    contentLength = Long.parseLong(element.getName());
+                                } catch (NumberFormatException e) {
+
+                                }
+                            }
+                            if (contentLength != null) {
+                                break;
+                            }
+                        }
+                    }
+                }
             }
 
+            if (contentEncodingHeader != null) {
+                presponse.setContentEncoding(contentEncodingHeader.toString());
+            }
+            presponse.setContentLength(contentLength == null ? -1L : contentLength);
+            presponse.setLocale(response.getLocale());
+
+            if (hasHandler) {
+                return handler.handleResponse(presponse);
+            }
         } finally {
             try {
                 if (response != null) {
@@ -221,7 +296,8 @@ public class ZRequest {
             } catch (IOException e) {
             }
         }
-        return presponse;
+        //不存在handler时默认返回PResponse对象
+        return (P)presponse;
     }
 
     public CookieStore getCookieStore() {

@@ -247,4 +247,30 @@ public class ResolveUtils {
         }
         return null;
     }
+
+
+    /**
+     * 获取文件名(通过返回的请求头信息中获取)
+     * @param text
+     * @param defaultValue
+     * @return
+     * @throws UnsupportedEncodingException
+     */
+    public static String getFilenameByContentDisposition(String text, String defaultValue) {
+        String result = null;
+        if (text != null && text.length() > 0) {
+            try {
+                text = new String(text.getBytes("ISO-8859-1"), "UTF-8");
+                String symbol = "filename=";
+                int index = text.indexOf(symbol);
+                if (index != -1) {
+                    //result = URLDecoder.decode(text.substring(index + symbol.length()),"UTF-8");
+                    result = text.substring(index + symbol.length());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return result != null && result.length() > 0 ? result : defaultValue;
+    }
 }

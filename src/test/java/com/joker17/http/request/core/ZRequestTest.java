@@ -6,11 +6,7 @@ import org.apache.http.Header;
 import org.apache.http.entity.ContentType;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
+import java.io.*;
 
 import static org.junit.Assert.*;
 
@@ -133,29 +129,30 @@ public class ZRequestTest {
 
 
     @Test
-    public void testChunked() throws IOException {
+    public void testDownloadWithRange() throws IOException {
+
         ZRequest request = ZRequest.of();
 
+        String url = "https://dl.360safe.com/360zip_setup_4.0.0.1200.exe";
 
-        String url = "http://localhost:8080/sys/file/preview/test/8d9ebbda675e4c8b9ced2880198b165a";
+        PResponse headResponse = request.doHead(HeadRequestConfig.of().setUrl(url));
 
-        url = "https://dl.360safe.com/360zip_setup_4.0.0.1200.exe";
+        long contentLength = headResponse.getContentLength();
 
-        PResponse response = request.doHead(HeadRequestConfig.of().setContentType((ContentType) null).setUrl(url));
 
-      /*  System.out.println(response);
-        System.out.println(response.getText(HttpConstants.UTF_8));
-*/
-        long contentLength = response.getContentLength();
+        System.out.println("=======================================================");
 
-        //contentLength = 2443;
+        for (Header header : headResponse.getHttpResponse().getAllHeaders()) {
+            System.out.println(String.format("[Header] %s: %s", header.getName(), header.getValue()));
+        }
+
+        System.out.println("=======================================================");
+
 
         int count = contentLength == -1 ? 1 : 4;
         long avgLength = contentLength / count;
 
-
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
-
         for (int i = 0; i < count; i++) {
             long start;
             long end;
@@ -172,7 +169,7 @@ public class ZRequestTest {
                 end = contentLength - 1;
             }
 
-            response = request.doGet(GetRequestConfig.of().setContentType((ContentType) null).setUrl(url)
+            PResponse response = request.doGet(GetRequestConfig.of().setContentType((ContentType) null).setUrl(url)
                     .addHeader("Range", String.format("bytes=%s-%s", start, end)));
             byteArrayOutputStream.write(response.getBody());
             byteArrayOutputStream.flush();
@@ -185,8 +182,12 @@ public class ZRequestTest {
             System.out.println("=======================================================");
         }
 
-        System.out.println(ResolveUtils.toString(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()), byteArrayOutputStream.size(), Charset.forName("UTF-8")));
 
+        File file = new File(String.format("%s/src/test/java/%s/%s", userDir, this.getClass().getPackage().getName().replace(".", "/"), "360zip_setup_4.0.0.1200.exe"));
+
+        ResolveUtils.copy(byteArrayOutputStream.toByteArray(), new FileOutputStream(file));
+
+        //System.out.println(ResolveUtils.toString(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()), byteArrayOutputStream.size(), Charset.forName("UTF-8")));
 
     }
 }

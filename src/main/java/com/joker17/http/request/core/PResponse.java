@@ -1,6 +1,5 @@
 package com.joker17.http.request.core;
 
-import com.joker17.http.request.config.BaseRequestConfig;
 import com.joker17.http.request.support.ResolveUtils;
 import lombok.*;
 import org.apache.http.HttpEntity;
@@ -13,12 +12,15 @@ import java.util.Locale;
 
 @Data
 @NoArgsConstructor
+@Setter(AccessLevel.PACKAGE)
 public class PResponse implements Serializable {
 
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private HttpEntity entity;
 
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private HttpResponse httpResponse;
 
     private ContentType contentType;
@@ -60,7 +62,6 @@ public class PResponse implements Serializable {
         return body;
     }
 
-
     public InputStream getContent() throws IOException {
         if (body != null) {
             return new ByteArrayInputStream(getBody());
@@ -71,8 +72,5 @@ public class PResponse implements Serializable {
     public void writeTo(OutputStream outputStream) throws IOException {
         ResolveUtils.copy(getContent(), outputStream);
     }
-
-
-
 
 }

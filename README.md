@@ -3,6 +3,7 @@
 
  - 使用httpclient对部分常用方式进行封装,无需关注过多细节
  - 通过链式进行请求参数的设置,获取http方法对应的请求执行结果
+ - 提供handler进行自定义解析结果(存在时不再默认填充body数据)
 
 > 引入方式
 
@@ -32,6 +33,8 @@
 
 > 函数
 
+
+`PResponse doHead(HeadRequestConfig requestConfig)`
 
 `PResponse doGet(GetRequestConfig requestConfig)`
 
@@ -65,7 +68,7 @@ requestBody      -> requestBody时添加(Post,Put,Patch,Delete)
 
 fileParameter    -> 非requestBody时添加(Post,Put,Patch)
 
-优先级           -> requestBody > fileParameter > formParameter
+优先级            -> requestBody > fileParameter > formParameter
 
 存在requestBody时fileParameter及formParameter会被忽略
 
@@ -74,3 +77,5 @@ fileParameter    -> 非requestBody时添加(Post,Put,Patch)
 [http-request-server-demo](https://github.com/joker-pper/http-request-server-demo.git)
 
 [test文件](https://github.com/joker-pper/http-request/blob/master/src/test/java/com/joker17/http/request/core/ZRequestTest.java)
+
+
