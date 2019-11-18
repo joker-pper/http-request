@@ -1,5 +1,9 @@
 
-> http-request
+> http-request  
+
+>[![](https://jitpack.io/v/joker-pper/http-request.svg)](https://jitpack.io/#joker-pper/http-request)
+
+
 
  - 使用httpclient对部分常用方式进行封装,无需关注过多细节
  - 通过链式进行请求参数的设置,获取http方法对应的请求执行结果
@@ -21,7 +25,7 @@
         <dependency>
             <groupId>com.github.joker-pper</groupId>
             <artifactId>http-request</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>TAG</version>
         </dependency>
     </dependencies>       
 
