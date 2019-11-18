@@ -1,13 +1,13 @@
 
 > http-request  
 
->[![](https://jitpack.io/v/joker-pper/http-request.svg)](https://jitpack.io/#joker-pper/http-request)
+[![](https://jitpack.io/v/joker-pper/http-request.svg)](https://jitpack.io/#joker-pper/http-request)
 
 
 
  - 使用httpclient对部分常用方式进行封装,无需关注过多细节
  - 通过链式进行请求参数的设置,获取http方法对应的请求执行结果
- - 提供handler进行自定义解析结果(存在时不再默认填充body数据)
+ - v1.0.1: 提供handler进行自定义解析结果(存在时不再默认填充body数据)
 
 > 引入方式
 
@@ -30,15 +30,13 @@
     </dependencies>       
 
 
-
-
 ----------
 
 
 > 函数
 
 
-`PResponse doHead(HeadRequestConfig requestConfig)`
+`v1.0.1: PResponse doHead(HeadRequestConfig requestConfig)`
 
 `PResponse doGet(GetRequestConfig requestConfig)`
 
