@@ -266,6 +266,12 @@ public class ResolveUtils {
                 if (index != -1) {
                     //result = URLDecoder.decode(text.substring(index + symbol.length()),"UTF-8");
                     result = text.substring(index + symbol.length());
+                    if (result.startsWith("\"")) {
+                        result = result.replace("\"", "");
+                    }
+                    if (result.endsWith(";")) {
+                        result = result.substring(0, result.length() - 1);
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -273,4 +279,22 @@ public class ResolveUtils {
         }
         return result != null && result.length() > 0 ? result : defaultValue;
     }
+
+
+    public static String getFilenameByUrl(String text) {
+        String result = null;
+        if (text != null && text.length() > 0) {
+            int index = text.lastIndexOf('/');
+            if (index != - 1) {
+                result = text.substring(index + 1, text.length());
+                index = result.indexOf('?');
+                if (index != -1) {
+                    result = result.substring(0, index);
+                }
+            }
+        }
+        return result ;
+    }
+
+
 }

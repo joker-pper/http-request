@@ -139,7 +139,6 @@ public class ZRequestTest {
 
         long contentLength = headResponse.getContentLength();
 
-
         System.out.println("=======================================================");
 
         for (Header header : headResponse.getHttpResponse().getAllHeaders()) {
@@ -148,6 +147,13 @@ public class ZRequestTest {
 
         System.out.println("=======================================================");
 
+        String contentDisposition = null;
+        try {
+            contentDisposition = headResponse.getHttpResponse().getLastHeader("Content-Disposition").getValue();
+        } catch (Exception e) {
+        }
+
+        String filename = ResolveUtils.getFilenameByContentDisposition(contentDisposition, ResolveUtils.getFilenameByUrl(url));
 
         int count = contentLength == -1 ? 1 : 4;
         long avgLength = contentLength / count;
@@ -174,20 +180,25 @@ public class ZRequestTest {
             byteArrayOutputStream.write(response.getBody());
             byteArrayOutputStream.flush();
 
-
             for (Header header : response.getHttpResponse().getAllHeaders()) {
                 System.out.println(String.format("[Header] %s: %s", header.getName(), header.getValue()));
             }
 
             System.out.println("=======================================================");
+
+            if (response.getStatusCode() == 200) {
+                System.err.println("当前资源不支持分片");
+                break;
+            }
         }
 
 
-        File file = new File(String.format("%s/src/test/java/%s/%s", userDir, this.getClass().getPackage().getName().replace(".", "/"), "360zip_setup_4.0.0.1200.exe"));
+        File file = new File(String.format("%s/src/test/java/%s/%s", userDir, this.getClass().getPackage().getName().replace(".", "/"), filename));
 
         ResolveUtils.copy(byteArrayOutputStream.toByteArray(), new FileOutputStream(file));
 
         //System.out.println(ResolveUtils.toString(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()), byteArrayOutputStream.size(), Charset.forName("UTF-8")));
 
     }
+
 }
