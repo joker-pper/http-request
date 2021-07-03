@@ -47,21 +47,21 @@ public class BaseRequestConfig<T> implements Serializable {
 
     public T setConnectTimeout(int connectTimeout) {
         this.connectTimeout = connectTimeout;
-        return (T)this;
+        return (T) this;
     }
 
     public T setSocketTimeout(int socketTimeout) {
         this.socketTimeout = socketTimeout;
-        return (T)this;
+        return (T) this;
     }
 
     public T setContentType(ContentType contentType) {
         this.contentType = contentType;
-        return (T)this;
+        return (T) this;
     }
 
     public T setContentType(String mimeType) {
-       return setContentType(mimeType, HttpConstants.UTF_8);
+        return setContentType(mimeType, HttpConstants.UTF_8);
     }
 
     public T setContentType(String mimeType, String charset) {
@@ -74,12 +74,12 @@ public class BaseRequestConfig<T> implements Serializable {
 
     public T setUserAgent(String userAgent) {
         this.userAgent = userAgent;
-        return (T)this;
+        return (T) this;
     }
 
     public T setUrl(String url) {
         this.url = url;
-        return (T)this;
+        return (T) this;
     }
 
     public T addHeaders(String headerKeys[], String headerValues[]) {
@@ -88,10 +88,10 @@ public class BaseRequestConfig<T> implements Serializable {
                 addHeader(headerKeys[i], headerValues[i]);
             }
         }
-        return (T)this;
+        return (T) this;
     }
 
-    public T addHeader(String headerKey, String ... headerValue) {
+    public T addHeader(String headerKey, String... headerValue) {
         ValidateUtils.checkKeyNameNotEmpty(headerKey);
         if (headerKey.equalsIgnoreCase("Content-Type")) {
             throw new IllegalArgumentException("not support add header Content-Type!");
@@ -109,7 +109,7 @@ public class BaseRequestConfig<T> implements Serializable {
             }
         }
 
-        return (T)this;
+        return (T) this;
     }
 
     public T addHeaders(Map<String, String> headersValueMap) {
@@ -120,13 +120,13 @@ public class BaseRequestConfig<T> implements Serializable {
                 addHeader(key, value);
             }
         }
-        return (T)this;
+        return (T) this;
     }
 
 
     public T clearHeaders() {
         headerParameterMap.clear();
-        return (T)this;
+        return (T) this;
     }
 
     public T clearHeaders(String... headerKeys) {
@@ -135,7 +135,7 @@ public class BaseRequestConfig<T> implements Serializable {
                 headerParameterMap.remove(headerKey);
             }
         }
-        return (T)this;
+        return (T) this;
     }
 
 
@@ -156,7 +156,7 @@ public class BaseRequestConfig<T> implements Serializable {
                 parameterValueList.add(value == null ? null : value.toString());
             }
         }
-        return (T)this;
+        return (T) this;
     }
 
     private T resolveFormParameter(String name, boolean add, Object... values) {
@@ -169,7 +169,7 @@ public class BaseRequestConfig<T> implements Serializable {
 
     public T setFormParameter(String name, Object... values) {
         resolveFormParameter(name, false, values);
-        return (T)this;
+        return (T) this;
     }
 
     public T addFormParameters(String[] names, Object[] values) {
@@ -178,7 +178,7 @@ public class BaseRequestConfig<T> implements Serializable {
                 addFormParameter(names[i], values[i]);
             }
         }
-        return (T)this;
+        return (T) this;
     }
 
     public T setFormParameters(String[] names, Object[] values) {
@@ -187,7 +187,7 @@ public class BaseRequestConfig<T> implements Serializable {
                 setFormParameter(names[i], values[i]);
             }
         }
-        return (T)this;
+        return (T) this;
     }
 
     public T addFormParameters(Map<String, List<Object>> formParameterMap) {
@@ -200,7 +200,7 @@ public class BaseRequestConfig<T> implements Serializable {
                 }
             }
         }
-        return (T)this;
+        return (T) this;
     }
 
     public T setFormParameters(Map<String, List<Object>> formParameterMap) {
@@ -213,7 +213,7 @@ public class BaseRequestConfig<T> implements Serializable {
                 }
             }
         }
-        return (T)this;
+        return (T) this;
     }
 
     public T clearFormParameters(String... names) {
@@ -222,12 +222,12 @@ public class BaseRequestConfig<T> implements Serializable {
                 formParameterMap.remove(name);
             }
         }
-        return (T)this;
+        return (T) this;
     }
 
     public T clearFormParameters() {
         formParameterMap.clear();
-        return (T)this;
+        return (T) this;
     }
 
     private T resolveQueryParameter(String name, boolean add, Object... values) {
@@ -240,7 +240,7 @@ public class BaseRequestConfig<T> implements Serializable {
 
     public T setQueryParameter(String name, Object... values) {
         resolveQueryParameter(name, false, values);
-        return (T)this;
+        return (T) this;
     }
 
     public T addQueryParameters(String[] names, Object[] values) {
@@ -249,7 +249,7 @@ public class BaseRequestConfig<T> implements Serializable {
                 addQueryParameter(names[i], values[i]);
             }
         }
-        return (T)this;
+        return (T) this;
     }
 
     public T setQueryParameters(String[] names, Object[] values) {
@@ -258,7 +258,7 @@ public class BaseRequestConfig<T> implements Serializable {
                 setQueryParameter(names[i], values[i]);
             }
         }
-        return (T)this;
+        return (T) this;
     }
 
     public T addQueryParameters(Map<String, List<Object>> queryParameterMap) {
@@ -271,7 +271,7 @@ public class BaseRequestConfig<T> implements Serializable {
                 }
             }
         }
-        return (T)this;
+        return (T) this;
     }
 
     public T setQueryParameters(Map<String, List<Object>> queryParameterMap) {
@@ -285,7 +285,7 @@ public class BaseRequestConfig<T> implements Serializable {
             }
         }
 
-        return (T)this;
+        return (T) this;
     }
 
     public T clearQueryParameters(String... names) {
@@ -294,12 +294,12 @@ public class BaseRequestConfig<T> implements Serializable {
                 queryParameterMap.remove(name);
             }
         }
-        return (T)this;
+        return (T) this;
     }
 
     public T clearQueryParameters() {
         queryParameterMap.clear();
-        return (T)this;
+        return (T) this;
     }
 
 

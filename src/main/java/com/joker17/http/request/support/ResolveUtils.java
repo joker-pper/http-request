@@ -1,6 +1,7 @@
 package com.joker17.http.request.support;
 
 import com.joker17.http.request.config.BaseRequestConfig;
+import com.joker17.http.request.core.HttpConstants;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.ParseException;
@@ -26,6 +27,9 @@ import java.util.Map;
 public class ResolveUtils {
 
     private static final int DEFAULT_BUFFER_SIZE = 4096;
+
+    private ResolveUtils() {
+    }
 
     /**
      * 获取处理的url,参数拼接在url后面
@@ -135,15 +139,11 @@ public class ResolveUtils {
         return contentType;
     }
 
-    public static String toString(
-            final HttpEntity entity, final Charset defaultCharset) throws IOException, ParseException {
+    public static String toString(final HttpEntity entity, final Charset defaultCharset) throws IOException, ParseException {
         return EntityUtils.toString(entity, defaultCharset);
     }
 
-    public static String toString(
-            final InputStream inStream,
-            final int contentLength,
-            final ContentType contentType) throws IOException {
+    public static String toString(final InputStream inStream, final int contentLength, final ContentType contentType) throws IOException {
         return toString(inStream, contentLength, getCharset(contentType));
     }
 
@@ -159,16 +159,12 @@ public class ResolveUtils {
         return charset;
     }
 
-    public static String toString(
-            final InputStream inStream,
-            final int contentLength,
-            Charset charset) throws IOException {
+    public static String toString(final InputStream inStream, final int contentLength, Charset charset) throws IOException {
         if (inStream == null) {
             return null;
         }
         try {
-            Args.check(contentLength <= Integer.MAX_VALUE,
-                    "HTTP data too large to be buffered in memory");
+            Args.check(contentLength <= Integer.MAX_VALUE, "HTTP data too large to be buffered in memory");
             int capacity = contentLength;
 
             if (capacity < 0) {
@@ -242,7 +238,7 @@ public class ResolveUtils {
                 }
             } catch (Exception e) {
                 //获取cookieStore失败
-                e.printStackTrace();
+                throw new RuntimeException("get cookie store error", e);
             }
         }
         return null;
@@ -251,6 +247,7 @@ public class ResolveUtils {
 
     /**
      * 获取文件名(通过返回的请求头信息中获取)
+     *
      * @param text
      * @param defaultValue
      * @return
@@ -260,7 +257,7 @@ public class ResolveUtils {
         String result = null;
         if (text != null && text.length() > 0) {
             try {
-                text = new String(text.getBytes("ISO-8859-1"), "UTF-8");
+                text = new String(text.getBytes(HttpConstants.ISO_8859_1), HttpConstants.UTF_8);
                 String symbol = "filename=";
                 int index = text.indexOf(symbol);
                 if (index != -1) {
@@ -274,26 +271,36 @@ public class ResolveUtils {
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new RuntimeException("parse file name error.", e);
             }
         }
         return result != null && result.length() > 0 ? result : defaultValue;
     }
 
-
+    /**
+     * 通过url获取文件名
+     * e.g:
+     * download/a.txt -> a.txt
+     * download/a.txt?random=xxx -> a.txt
+     *
+     * @param text
+     * @return
+     */
     public static String getFilenameByUrl(String text) {
         String result = null;
         if (text != null && text.length() > 0) {
             int index = text.lastIndexOf('/');
-            if (index != - 1) {
-                result = text.substring(index + 1, text.length());
+            if (index != -1) {
+                //获取/后面的部分
+                result = text.substring(index + 1);
                 index = result.indexOf('?');
                 if (index != -1) {
+                    //存在?时截取前面的内容
                     result = result.substring(0, index);
                 }
             }
         }
-        return result ;
+        return result;
     }
 
 

@@ -3,7 +3,6 @@ package com.joker17.http.request.core;
 import com.joker17.http.request.config.*;
 import com.joker17.http.request.support.HttpClientUtils;
 import com.joker17.http.request.support.ResolveUtils;
-import lombok.RequiredArgsConstructor;
 import org.apache.http.*;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.RequestConfig;
@@ -23,22 +22,45 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
-@RequiredArgsConstructor(staticName = "of")
 public class ZRequest {
 
-    private CloseableHttpClient httpClient = HttpClientUtils.getIgnoreVerifySSLHttpClient();
+    private CloseableHttpClient httpClient;
+    private CookieStore cookieStore;
 
-    private CookieStore cookieStore = null;
+    private ZRequest(CloseableHttpClient httpClient) {
+        this.httpClient = httpClient;
+    }
 
     /**
      * 自定义httpClient
+     *
      * @param httpClient
      * @return
      */
-    public ZRequest setHttpClient(CloseableHttpClient httpClient) {
-        this.httpClient = httpClient;
-        this.cookieStore = null;
-        return this;
+    public static ZRequest of(CloseableHttpClient httpClient) {
+        return new ZRequest(httpClient);
+    }
+
+    /**
+     * 获取ZRequest对象
+     *
+     * @param isIgnoreVerifySSL 是否忽略验证ssl
+     * @return
+     */
+    public static ZRequest of(boolean isIgnoreVerifySSL) {
+        if (isIgnoreVerifySSL) {
+            return of(HttpClientUtils.getIgnoreVerifySSLHttpClient());
+        }
+        return of(HttpClientUtils.getDefaultHttpClient());
+    }
+
+    /**
+     * 获取ZRequest对象
+     *
+     * @return
+     */
+    public static ZRequest of() {
+        return of(true);
     }
 
     public PResponse doHead(HeadRequestConfig requestConfig) throws IOException {
@@ -91,7 +113,7 @@ public class ZRequest {
         return resolveResponse(httpPatch, requestConfig, handler);
     }
 
-    public PResponse doDelete(DeleteRequestConfig requestConfig) throws IOException  {
+    public PResponse doDelete(DeleteRequestConfig requestConfig) throws IOException {
         return doDelete(requestConfig, null);
     }
 
@@ -199,7 +221,7 @@ public class ZRequest {
         if (requestConfig.getUserAgent() != null) {
             requestBase.setHeader(HttpHeaders.USER_AGENT, requestConfig.getUserAgent());
         }
-        
+
         Map<String, List<String>> headerParameterMap = requestConfig.getHeaderParameterMap();
         for (Map.Entry<String, List<String>> entry : headerParameterMap.entrySet()) {
             String headerKey = entry.getKey();
@@ -297,7 +319,7 @@ public class ZRequest {
             }
         }
         //不存在handler时默认返回PResponse对象
-        return (P)presponse;
+        return (P) presponse;
     }
 
     public CookieStore getCookieStore() {

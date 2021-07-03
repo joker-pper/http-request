@@ -14,6 +14,9 @@ import java.security.cert.X509Certificate;
 
 public class HttpClientUtils {
 
+    private HttpClientUtils() {
+    }
+
     /**
      * 获取忽略证书验证的httpClient
      * https://blog.csdn.net/u010430495/article/details/72967591
