@@ -13,7 +13,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.7</java.version>
         <maven.test.skip>true</maven.test.skip>
-        <httpclient.version>4.5.10</httpclient.version>
+        <httpclient.version>4.5.13</httpclient.version>
         <junit.version>4.13.1</junit.version>
         <lombok.version>1.18.10</lombok.version>
     </properties>
