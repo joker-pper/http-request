@@ -3,12 +3,17 @@ package com.joker17.http.request.core;
 import com.joker17.http.request.config.*;
 import com.joker17.http.request.support.ResolveUtils;
 import org.apache.http.Header;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.entity.ContentType;
 import org.junit.Test;
 
-import java.io.*;
-
-import static org.junit.Assert.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ZRequestTest {
 
@@ -22,6 +27,46 @@ public class ZRequestTest {
 
         System.out.println(PostRequestConfig.of().setUrl("https://baidu.com").setRequestBody("{\"username\": \"test\"}"));
         System.out.println(PostRequestConfig.of().setUrl("https://baidu.com").addFile(new File("")));
+
+        Map<String, List<String>> parameterMap1 = new HashMap<>();
+        Map<String, List<Object>> parameterMap2 = new HashMap<>();
+
+        String[] parameterNames = new String[]{"1", "2"};
+        Object[] parameterValues1 = new Object[]{"111", 222};
+        String[] parameterValues2 = new String[]{"222", "333"};
+
+        System.out.println(PostRequestConfig.of().setUrl("https://baidu.com")
+                .setFormParameters(parameterMap1)
+                .setFormParameters(parameterMap2)
+                .addFormParameters(parameterMap1)
+                .addFormParameters(parameterMap2)
+
+                .setFormParameters(parameterNames, parameterValues1)
+                .setFormParameters(parameterNames, parameterValues2)
+                .addFormParameters(parameterNames, parameterValues1)
+                .addFormParameters(parameterNames, parameterValues2)
+
+                .setQueryParameters(parameterMap1)
+                .setQueryParameters(parameterMap2)
+                .addQueryParameters(parameterMap1)
+                .addQueryParameters(parameterMap2)
+
+                .setQueryParameters(parameterNames, parameterValues1)
+                .setQueryParameters(parameterNames, parameterValues2)
+                .addQueryParameters(parameterNames, parameterValues1)
+                .addQueryParameters(parameterNames, parameterValues2)
+
+                .addFile(new File("")));
+    }
+
+    @Test
+    public void testConfigWithCallback() {
+        System.out.println(PostRequestConfig.of().setUrl("https://baidu.com").setConfigCallback(new RequestConfigCallback<RequestConfig.Builder>() {
+            @Override
+            public void execute(RequestConfig.Builder builder) {
+                builder.setCircularRedirectsAllowed(true).setMaxRedirects(10);
+            }
+        }));
 
     }
 
@@ -155,7 +200,10 @@ public class ZRequestTest {
 
         String filename = ResolveUtils.getFilenameByContentDisposition(contentDisposition, ResolveUtils.getFilenameByUrl(url));
 
-        int count = contentLength == -1 ? 1 : 4;
+        System.out.println(String.format("[file name]: %s ", filename));
+        System.out.println("=======================================================");
+
+        int count = contentLength == -1 || contentLength <= 1024 * 10 ? 1 : 4;
         long avgLength = contentLength / count;
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
@@ -177,17 +225,24 @@ public class ZRequestTest {
 
             PResponse response = request.doGet(GetRequestConfig.of().setContentType((ContentType) null).setUrl(url)
                     .addHeader("Range", String.format("bytes=%s-%s", start, end)));
-            byteArrayOutputStream.write(response.getBody());
-            byteArrayOutputStream.flush();
 
             for (Header header : response.getHttpResponse().getAllHeaders()) {
                 System.out.println(String.format("[Header] %s: %s", header.getName(), header.getValue()));
             }
 
-            System.out.println("=======================================================");
-
-            if (response.getStatusCode() == 200) {
+            int statusCode = response.getStatusCode();
+            if (statusCode == 200) {
+                System.out.println("=======================================================");
                 System.err.println("当前资源不支持分片");
+                System.out.println("=======================================================");
+            } else {
+                System.out.println("=======================================================");
+            }
+
+            byteArrayOutputStream.write(response.getBody());
+            byteArrayOutputStream.flush();
+
+            if (statusCode == 200) {
                 break;
             }
         }

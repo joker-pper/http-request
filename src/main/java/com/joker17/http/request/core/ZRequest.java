@@ -131,8 +131,8 @@ public class ZRequest {
         List<NameValuePair> queryParamList = ResolveUtils.getQueryParamList(requestConfig);
         //设置请求url
         requestBase.setURI(ResolveUtils.getURI(url, queryParamList, true, requestCharset));
-        //设置请求头和超时时间
-        setHeaderAndTimeoutRequestConfig(requestBase, requestConfig);
+        //设置请求头和超时时间等
+        setHeaderAndRequestConfig(requestBase, requestConfig);
     }
 
     protected void resolveRequestBodyConfig(HttpEntityEnclosingRequestBase requestBase, RequestBodyConfig requestConfig) {
@@ -211,8 +211,9 @@ public class ZRequest {
         }
     }
 
-    protected void setHeaderAndTimeoutRequestConfig(HttpRequestBase requestBase, BaseRequestConfig requestConfig) {
-        requestBase.setConfig(getTimeoutRequestConfig(requestConfig.getSocketTimeout(), requestConfig.getConnectTimeout()));
+    protected void setHeaderAndRequestConfig(HttpRequestBase requestBase, BaseRequestConfig requestConfig) {
+        //设置config
+        requestBase.setConfig(getRequestConfig(requestConfig));
         //设置请求头
         ContentType contentType = requestConfig.getContentType();
         if (contentType != null) {
@@ -232,8 +233,23 @@ public class ZRequest {
         }
     }
 
-    protected RequestConfig getTimeoutRequestConfig(int socketTimeout, int connectTimeout) {
-        RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(socketTimeout).setConnectTimeout(connectTimeout).build();
+    protected RequestConfig getRequestConfig(BaseRequestConfig baseRequestConfig) {
+        int socketTimeout = baseRequestConfig.getSocketTimeout();
+        int connectTimeout = baseRequestConfig.getConnectTimeout();
+        RequestConfig.Builder builder = RequestConfig.custom().setSocketTimeout(socketTimeout).setConnectTimeout(connectTimeout);
+        if (baseRequestConfig.getCookieSpec() != null) {
+            builder.setCookieSpec(baseRequestConfig.getCookieSpec());
+        }
+        if (baseRequestConfig.getRedirectsEnabled() != null) {
+            builder.setRedirectsEnabled(baseRequestConfig.getRedirectsEnabled());
+        }
+
+        RequestConfigCallback configCallback = baseRequestConfig.getConfigCallback();
+        if (configCallback != null) {
+            configCallback.execute(builder);
+        }
+
+        RequestConfig requestConfig = builder.build();
         return requestConfig;
     }
 

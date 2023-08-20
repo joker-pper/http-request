@@ -1,8 +1,12 @@
 package com.joker17.http.request.config;
 
 import com.joker17.http.request.core.HttpConstants;
+import com.joker17.http.request.support.DataMapCallback;
 import com.joker17.http.request.support.ValidateUtils;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.Setter;
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.entity.ContentType;
 
 import java.io.Serializable;
@@ -37,6 +41,18 @@ public class BaseRequestConfig<T> implements Serializable {
     private int socketTimeout = -1;
 
     @Setter(value = AccessLevel.NONE)
+    /**
+     * @see CookieSpecs
+     */
+    private String cookieSpec;
+
+    @Setter(value = AccessLevel.NONE)
+    private Boolean redirectsEnabled;
+
+    @Setter(value = AccessLevel.NONE)
+    private RequestConfigCallback configCallback;
+
+    @Setter(value = AccessLevel.NONE)
     private ContentType contentType = ContentType.create(HttpConstants.APPLICATION_JSON, HttpConstants.UTF_8);
 
     @Setter(value = AccessLevel.NONE)
@@ -52,6 +68,21 @@ public class BaseRequestConfig<T> implements Serializable {
 
     public T setSocketTimeout(int socketTimeout) {
         this.socketTimeout = socketTimeout;
+        return (T) this;
+    }
+
+    public T setCookieSpec(String cookieSpec) {
+        this.cookieSpec = cookieSpec;
+        return (T) this;
+    }
+
+    public T setRedirectsEnabled(boolean redirectsEnabled) {
+        this.redirectsEnabled = redirectsEnabled;
+        return (T) this;
+    }
+
+    public T setConfigCallback(RequestConfigCallback configCallback) {
+        this.configCallback = configCallback;
         return (T) this;
     }
 
@@ -123,6 +154,48 @@ public class BaseRequestConfig<T> implements Serializable {
         return (T) this;
     }
 
+    public T setHeaders(String headerKeys[], String headerValues[]) {
+        if (headerKeys != null && headerValues != null) {
+            for (int i = 0; i < headerKeys.length; i++) {
+                setHeader(headerKeys[i], headerValues[i]);
+            }
+        }
+        return (T) this;
+    }
+
+    public T setHeader(String headerKey, String... headerValue) {
+        ValidateUtils.checkKeyNameNotEmpty(headerKey);
+        if (headerKey.equalsIgnoreCase("Content-Type")) {
+            throw new IllegalArgumentException("not support set header Content-Type!");
+        }
+
+        List<String> headerValues = headerParameterMap.get(headerKey);
+        if (headerValues == null) {
+            headerValues = new ArrayList<>(16);
+            headerParameterMap.put(headerKey, headerValues);
+        }
+
+        headerValues.clear();
+
+        if (headerValue != null) {
+            for (String currentValue : headerValue) {
+                headerValues.add(currentValue);
+            }
+        }
+
+        return (T) this;
+    }
+
+    public T setHeaders(Map<String, String> headersValueMap) {
+        if (headersValueMap != null) {
+            for (Map.Entry<String, String> entry : headersValueMap.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                setHeader(key, value);
+            }
+        }
+        return (T) this;
+    }
 
     public T clearHeaders() {
         headerParameterMap.clear();
@@ -190,29 +263,35 @@ public class BaseRequestConfig<T> implements Serializable {
         return (T) this;
     }
 
-    public T addFormParameters(Map<String, List<Object>> formParameterMap) {
-        if (formParameterMap != null) {
-            for (Map.Entry<String, List<Object>> entry : formParameterMap.entrySet()) {
+    protected <E> void forEachWithListMap(Map<String, List<E>> dataMap, DataMapCallback<List<E>> callback) {
+        if (dataMap != null) {
+            for (Map.Entry<String, List<E>> entry : dataMap.entrySet()) {
                 String name = entry.getKey();
-                List<Object> valueList = entry.getValue();
+                List<E> valueList = entry.getValue();
                 if (valueList != null && !valueList.isEmpty()) {
-                    addFormParameter(name, valueList.toArray(new Object[valueList.size()]));
+                    callback.run(name, valueList);
                 }
             }
         }
+    }
+
+    public <E> T addFormParameters(Map<String, List<E>> formParameterMap) {
+        forEachWithListMap(formParameterMap, new DataMapCallback<List<E>>() {
+            @Override
+            public void run(String key, List<E> valueList) {
+                addFormParameter(key, valueList.toArray(new Object[valueList.size()]));
+            }
+        });
         return (T) this;
     }
 
-    public T setFormParameters(Map<String, List<Object>> formParameterMap) {
-        if (formParameterMap != null) {
-            for (Map.Entry<String, List<Object>> entry : formParameterMap.entrySet()) {
-                String name = entry.getKey();
-                List<Object> valueList = entry.getValue();
-                if (valueList != null && !valueList.isEmpty()) {
-                    setFormParameter(name, valueList.toArray(new Object[valueList.size()]));
-                }
+    public <E> T setFormParameters(Map<String, List<E>> formParameterMap) {
+        forEachWithListMap(formParameterMap, new DataMapCallback<List<E>>() {
+            @Override
+            public void run(String key, List<E> valueList) {
+                setFormParameter(key, valueList.toArray(new Object[valueList.size()]));
             }
-        }
+        });
         return (T) this;
     }
 
@@ -261,30 +340,23 @@ public class BaseRequestConfig<T> implements Serializable {
         return (T) this;
     }
 
-    public T addQueryParameters(Map<String, List<Object>> queryParameterMap) {
-        if (queryParameterMap != null) {
-            for (Map.Entry<String, List<Object>> entry : queryParameterMap.entrySet()) {
-                String name = entry.getKey();
-                List<Object> valueList = entry.getValue();
-                if (valueList != null && !valueList.isEmpty()) {
-                    addQueryParameter(name, valueList.toArray(new Object[valueList.size()]));
-                }
+    public <E> T addQueryParameters(Map<String, List<E>> queryParameterMap) {
+        forEachWithListMap(queryParameterMap, new DataMapCallback<List<E>>() {
+            @Override
+            public void run(String key, List<E> valueList) {
+                addQueryParameter(key, valueList.toArray(new Object[valueList.size()]));
             }
-        }
+        });
         return (T) this;
     }
 
-    public T setQueryParameters(Map<String, List<Object>> queryParameterMap) {
-        if (queryParameterMap != null) {
-            for (Map.Entry<String, List<Object>> entry : queryParameterMap.entrySet()) {
-                String name = entry.getKey();
-                List<Object> valueList = entry.getValue();
-                if (valueList != null && !valueList.isEmpty()) {
-                    setQueryParameter(name, valueList.toArray(new Object[valueList.size()]));
-                }
+    public <E> T setQueryParameters(Map<String, List<E>> queryParameterMap) {
+        forEachWithListMap(queryParameterMap, new DataMapCallback<List<E>>() {
+            @Override
+            public void run(String key, List<E> valueList) {
+                setQueryParameter(key, valueList.toArray(new Object[valueList.size()]));
             }
-        }
-
+        });
         return (T) this;
     }
 
