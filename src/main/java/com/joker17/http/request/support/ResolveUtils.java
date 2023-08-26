@@ -2,6 +2,7 @@ package com.joker17.http.request.support;
 
 import com.joker17.http.request.config.BaseRequestConfig;
 import com.joker17.http.request.core.HttpConstants;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.ParseException;
@@ -20,9 +21,7 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ResolveUtils {
 
@@ -303,5 +302,148 @@ public class ResolveUtils {
         return result;
     }
 
+    /**
+     * 解析多组数据
+     *
+     * @param data                       支持postman bulk edit data / chrome复制的请求头内容
+     *
+     *                                   <p>
+     *                                   e.g:
+     *                                   key1:value1
+     *                                   key2:\\n
+     *                                   value2
+     *                                   //key3:value3
+     * @param separator                  分割符, e.g:
+     * @param removeValueFirstBlankSpace 是否移除value的第一个空格
+     * @param continueKeys               跳过keys
+     * @return
+     */
+    public static Map<String, List<String>> convertBulkDataMap(String data, String separator, boolean removeValueFirstBlankSpace, String... continueKeys) {
+        if (StringUtils.isBlank(data)) {
+            return Collections.emptyMap();
+        }
 
+        String[] results = StringUtils.split(data, "\n");
+        if (results == null || results.length == 0) {
+            return Collections.emptyMap();
+        }
+
+        Set<String> continueKeySet;
+        if (continueKeys != null && continueKeys.length > 0) {
+            continueKeySet = new HashSet<>(Arrays.asList(continueKeys));
+        } else {
+            continueKeySet = Collections.emptySet();
+        }
+
+        Map<String, List<String>> resultMap = new LinkedHashMap<>(32);
+
+        String annotateSymbol = "//";
+        String key = null;
+        String value = null;
+        boolean isWillContainsKey = true;
+        boolean isStartWithAnnotateSymbol = false;
+        boolean isToAddValue = false;
+        int separatorLen = StringUtils.length(separator);
+        for (final String result : results) {
+            if (isWillContainsKey) {
+                int count = StringUtils.countMatches(result, separator);
+                if (count == 0) {
+                    //不存在时跳过
+                    continue;
+                }
+
+                isStartWithAnnotateSymbol = StringUtils.startsWith(result, annotateSymbol);
+                String currentStr = result;
+                if (isStartWithAnnotateSymbol) {
+                    //被注释时
+                    currentStr = StringUtils.removeStart(currentStr, annotateSymbol);
+                }
+
+                //key: e.g:  :method  Accept-Encoding
+                boolean startWithSeparator = StringUtils.startsWith(currentStr, separator);
+                if (startWithSeparator && StringUtils.length(currentStr) == separatorLen) {
+                    //只存在分割符时
+                    continue;
+                }
+
+                if (startWithSeparator) {
+                    key = separator + StringUtils.substringBefore(currentStr.substring(separatorLen), separator);
+                } else {
+                    key = StringUtils.substringBefore(currentStr, separator);
+                }
+
+                if (count == (startWithSeparator ? 2 : 1) && StringUtils.endsWith(currentStr, separator)) {
+                    //数量匹配并以分割符号结尾时 -- 值和key不在同一行
+                    isWillContainsKey = false;
+                } else {
+                    value = StringUtils.substringAfter(currentStr, key + separator);
+                    //需要设置值
+                    isToAddValue = true;
+                }
+            } else {
+                //当前是value时
+                value = result;
+                //需要设置值
+                isToAddValue = true;
+                //下一个包含key
+                isWillContainsKey = true;
+            }
+
+            if (isToAddValue) {
+                isToAddValue = false;
+                if (isStartWithAnnotateSymbol) {
+                    //是被注释时
+                    continue;
+                }
+
+                if (continueKeySet.contains(key)) {
+                    //是被跳过的key时
+                    continue;
+                }
+
+                if (removeValueFirstBlankSpace) {
+                    value = StringUtils.removeStart(value, " ");
+                }
+
+                List<String> valueList = resultMap.get(key);
+                if (valueList == null) {
+                    valueList = new ArrayList<>(4);
+                    resultMap.put(key, valueList);
+                }
+                valueList.add(value);
+            }
+        }
+        return resultMap;
+    }
+
+    /**
+     * 转换成简单的key value map
+     *
+     * @param dataMap
+     * @param takeFirstValue 是否取第一个值
+     * @return
+     */
+    public static Map<String, String> transferSimplifyStringMap(final Map<String, List<String>> dataMap, boolean takeFirstValue) {
+        if (dataMap == null || dataMap.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, String> resultMap = new LinkedHashMap<>(32);
+        for (Map.Entry<String, List<String>> entry : dataMap.entrySet()) {
+            String key = entry.getKey();
+            List<String> valueList = entry.getValue();
+            String value;
+            if (valueList == null || valueList.isEmpty()) {
+                value = null;
+            } else {
+                if (takeFirstValue) {
+                    value = valueList.get(0);
+                } else {
+                    value = valueList.get(valueList.size() - 1);
+                }
+            }
+            resultMap.put(key, value);
+        }
+        return resultMap;
+    }
 }

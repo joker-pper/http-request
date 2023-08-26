@@ -1,8 +1,8 @@
 
 > http-request  
 
-[![](https://jitpack.io/v/joker-pper/http-request.svg)](https://jitpack.io/#joker-pper/http-request)
-
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.joker-pper/http-request.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=io.github.joker-pper:http-request)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 
  - 使用httpclient对部分常用方式进行封装,无需关注过多细节
@@ -10,20 +10,10 @@
  - v1.0.1: 提供handler进行自定义解析结果(存在时不再默认填充body数据)
 
 > 引入方式
-
-
-
-    <repositories>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
-    </repositories>
-    
  
     <dependencies>
         <dependency>
-            <groupId>com.github.joker-pper</groupId>
+            <groupId>io.github.joker-pper</groupId>
             <artifactId>http-request</artifactId>
             <version>TAG</version>
         </dependency>
@@ -73,6 +63,19 @@ fileParameter    -> 非requestBody时添加(Post,Put,Patch)
 优先级            -> requestBody > fileParameter > formParameter
 
 存在requestBody时fileParameter及formParameter会被忽略
+
+> 拓展
+
+  提供增加或覆写client request config（v1.0.2）
+  
+```
+    PostRequestConfig.of().setUrl("https://xxxx.com").setConfigCallback(new RequestConfigCallback<RequestConfig.Builder>() {
+        @Override
+        public void execute(RequestConfig.Builder builder) {
+            builder.setCircularRedirectsAllowed(true).setMaxRedirects(10);
+        }
+    });
+```
 
 > 其他
 
