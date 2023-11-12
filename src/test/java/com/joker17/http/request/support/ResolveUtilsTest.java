@@ -1,11 +1,17 @@
 package com.joker17.http.request.support;
 
+import com.joker17.http.request.core.HttpConstants;
+import com.joker17.http.request.core.ZRequestTest;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.*;
 
 public class ResolveUtilsTest {
+    private String userDir = System.getProperty("user.dir");
 
     @Test
     public void transferSimplifyStringMap() {
@@ -88,5 +94,14 @@ public class ResolveUtilsTest {
         Map<String, List<String>> expectedMap = new LinkedHashMap<>(16);
         Assert.assertEquals(expectedMap, dataMap);
         System.out.println(dataMap);
+    }
+
+    @Test
+    public void testToString() throws IOException {
+        String javaFilePath = ZRequestTest.class.getName().replace(".", "/")  + ".java";
+        final File file = new File(String.format("%s/src/test/java/%s", userDir, javaFilePath));
+        String result = ResolveUtils.toString(new FileInputStream(file), -1, HttpConstants.UTF_8);
+        Assert.assertNotNull(result);
+        System.out.println(result);
     }
 }

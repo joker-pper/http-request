@@ -35,6 +35,12 @@ public class BaseRequestConfig<T> implements Serializable {
     private Map<String, List<String>> formParameterMap = new LinkedHashMap<>(16);
 
     @Setter(value = AccessLevel.NONE)
+    /**
+     * 字符集，优先级最高
+     */
+    private Charset charset = HttpConstants.UTF_8;
+
+    @Setter(value = AccessLevel.NONE)
     private int connectTimeout = -1;
 
     @Setter(value = AccessLevel.NONE)
@@ -43,6 +49,7 @@ public class BaseRequestConfig<T> implements Serializable {
     @Setter(value = AccessLevel.NONE)
     /**
      * @see CookieSpecs
+     * e.g:  IGNORE_COOKIES 可用来忽略控制台中异常cookie提示
      */
     private String cookieSpec;
 
@@ -53,13 +60,18 @@ public class BaseRequestConfig<T> implements Serializable {
     private RequestConfigCallback configCallback;
 
     @Setter(value = AccessLevel.NONE)
-    private ContentType contentType = ContentType.create(HttpConstants.APPLICATION_JSON, HttpConstants.UTF_8);
+    private ContentType contentType = HttpConstants.DEFAULT_CONTENT_TYPE;
 
     @Setter(value = AccessLevel.NONE)
     private String userAgent;
 
     @Setter(value = AccessLevel.NONE)
     private String url;
+
+    public T setCharset(Charset charset) {
+        this.charset = charset;
+        return (T) this;
+    }
 
     public T setConnectTimeout(int connectTimeout) {
         this.connectTimeout = connectTimeout;
@@ -92,7 +104,7 @@ public class BaseRequestConfig<T> implements Serializable {
     }
 
     public T setContentType(String mimeType) {
-        return setContentType(mimeType, HttpConstants.UTF_8);
+        return setContentType(mimeType, charset);
     }
 
     public T setContentType(String mimeType, String charset) {
@@ -101,6 +113,11 @@ public class BaseRequestConfig<T> implements Serializable {
 
     public T setContentType(String mimeType, Charset charset) {
         return setContentType(ContentType.create(mimeType, charset));
+    }
+
+    public T clearContentType() {
+        this.contentType = null;
+        return (T) this;
     }
 
     public T setUserAgent(String userAgent) {

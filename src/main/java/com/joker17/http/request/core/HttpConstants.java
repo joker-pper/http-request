@@ -1,10 +1,12 @@
 package com.joker17.http.request.core;
 
+import org.apache.http.entity.ContentType;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class HttpConstants {
 
-    public static final Charset UTF_8 = Charset.forName("UTF-8");
+    public static final Charset UTF_8 = StandardCharsets.UTF_8;
     public static final Charset GBK = Charset.forName("GBK");
     public static final Charset ASCII = Charset.forName("US-ASCII");
     public static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
@@ -18,6 +20,8 @@ public class HttpConstants {
     public static final String APPLICATION_XHTML_XML = "application/xhtml+xml";
     public static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
     public static final String MULTIPART_FORM_DATA = "multipart/form-data";
+
+    public static final ContentType DEFAULT_CONTENT_TYPE = ContentType.create(HttpConstants.APPLICATION_JSON, UTF_8);
 
     public final static String[] USER_AGENTS = new String[] {
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36",

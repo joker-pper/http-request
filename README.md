@@ -54,11 +54,11 @@
 
 queryParameter   -> 拼接到url后面(All)
 
-formParameter    -> 非requestBody时添加(Post,Put,Patch)
+formParameter    -> 非requestBody时添加(Post,Put,Patch,Delete)
 
 requestBody      -> requestBody时添加(Post,Put,Patch,Delete)
 
-fileParameter    -> 非requestBody时添加(Post,Put,Patch)
+fileParameter    -> 非requestBody时添加(Post,Put,Patch,Delete)
 
 优先级            -> requestBody > fileParameter > formParameter
 

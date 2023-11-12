@@ -10,6 +10,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.*;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
@@ -63,30 +64,81 @@ public class ZRequest {
         return of(true);
     }
 
+    /**
+     * head请求
+     *
+     * @param requestConfig
+     * @return
+     * @throws IOException
+     */
     public PResponse doHead(HeadRequestConfig requestConfig) throws IOException {
         return doHead(requestConfig, null);
     }
 
+    /**
+     * head请求
+     *
+     * @param requestConfig
+     * @param handler
+     * @param <P>
+     * @param <Z>
+     * @return
+     * @throws IOException
+     */
     public <P, Z extends HeadRequestConfig> P doHead(Z requestConfig, PResponseHandler<P, Z> handler) throws IOException {
         HttpHead httpHead = new HttpHead();
         resolveBaseRequestConfig(httpHead, requestConfig);
         return resolveResponse(httpHead, requestConfig, handler);
     }
 
+    /**
+     * get请求
+     *
+     * @param requestConfig
+     * @return
+     * @throws IOException
+     */
     public PResponse doGet(GetRequestConfig requestConfig) throws IOException {
         return doGet(requestConfig, null);
     }
 
+    /**
+     * get请求
+     *
+     * @param requestConfig
+     * @param handler
+     * @param <P>
+     * @param <Z>
+     * @return
+     * @throws IOException
+     */
     public <P, Z extends GetRequestConfig> P doGet(Z requestConfig, PResponseHandler<P, Z> handler) throws IOException {
         HttpGet httpGet = new HttpGet();
         resolveBaseRequestConfig(httpGet, requestConfig);
         return resolveResponse(httpGet, requestConfig, handler);
     }
 
+    /**
+     * post请求
+     *
+     * @param requestConfig
+     * @return
+     * @throws IOException
+     */
     public PResponse doPost(PostRequestConfig requestConfig) throws IOException {
         return doPost(requestConfig, null);
     }
 
+    /**
+     * post请求
+     *
+     * @param requestConfig
+     * @param handler
+     * @param <P>
+     * @param <Z>
+     * @return
+     * @throws IOException
+     */
     public <P, Z extends PostRequestConfig> P doPost(Z requestConfig, PResponseHandler<P, Z> handler) throws IOException {
         HttpPost httpPost = new HttpPost();
         resolveRequestBodyAndFileConfig(httpPost, requestConfig);
@@ -119,15 +171,35 @@ public class ZRequest {
 
     public <P, Z extends DeleteRequestConfig> P doDelete(Z requestConfig, PResponseHandler<P, Z> handler) throws IOException {
         HttpDelete httpDelete = new HttpDelete();
-        resolveRequestBodyConfig(httpDelete, requestConfig);
+        resolveRequestBodyAndFileConfig(httpDelete, requestConfig);
         return resolveResponse(httpDelete, requestConfig, handler);
     }
 
+    /**
+     * 获取request字符集
+     *
+     * @param requestConfig
+     * @param defaultCharset
+     * @return
+     */
+    protected Charset getRequestCharset(BaseRequestConfig requestConfig, Charset defaultCharset) {
+        Charset requestCharset = requestConfig.getCharset();
+        if (requestCharset != null) {
+            return requestCharset;
+        }
+        Charset requestContentTypeCharset = ResolveUtils.getCharset(requestConfig.getContentType());
+        return requestContentTypeCharset != null ? requestContentTypeCharset : defaultCharset;
+    }
 
+    /**
+     * 进行设置基本请求信息配置
+     *
+     * @param requestBase
+     * @param requestConfig
+     */
     protected void resolveBaseRequestConfig(HttpRequestBase requestBase, BaseRequestConfig requestConfig) {
         String url = requestConfig.getUrl();
-        ContentType requestContentType = requestConfig.getContentType();
-        Charset requestCharset = requestContentType != null ? requestContentType.getCharset() : HttpConstants.UTF_8;
+        Charset requestCharset = getRequestCharset(requestConfig, HttpConstants.UTF_8);
         List<NameValuePair> queryParamList = ResolveUtils.getQueryParamList(requestConfig);
         //设置请求url
         requestBase.setURI(ResolveUtils.getURI(url, queryParamList, true, requestCharset));
@@ -137,12 +209,9 @@ public class ZRequest {
 
     protected void resolveRequestBodyConfig(HttpEntityEnclosingRequestBase requestBase, RequestBodyConfig requestConfig) {
         String requestBody = requestConfig.getRequestBody();
-        ContentType requestContentType = requestConfig.getContentType();
-        Charset requestCharset = requestContentType.getCharset();
-
+        Charset requestCharset = getRequestCharset(requestConfig, HttpConstants.UTF_8);
         boolean hasRequestBody = requestBody != null;
         resolveBaseRequestConfig(requestBase, requestConfig);
-
         if (!hasRequestBody) {
             List<NameValuePair> formParamList = ResolveUtils.getFormParamList(requestConfig);
             if (!formParamList.isEmpty()) {
@@ -156,61 +225,60 @@ public class ZRequest {
     }
 
     protected void resolveRequestBodyAndFileConfig(HttpEntityEnclosingRequestBase requestBase, RequestBodyAndFileConfig requestConfig) {
-        Map<String, List<String>> formParameterMap = requestConfig.getFormParameterMap();
-        String requestBody = requestConfig.getRequestBody();
         Map<String, List<File>> fileParameterMap = requestConfig.getFileParameterMap();
-
-        boolean hasRequestBody = requestBody != null;
-        boolean hasFormParameter = !formParameterMap.isEmpty();
         boolean hasFileParameterMap = !fileParameterMap.isEmpty();
-
-        ContentType requestContentType = requestConfig.getContentType();
-        Charset requestCharset = requestContentType.getCharset();
+        String requestBody = requestConfig.getRequestBody();
+        boolean hasRequestBody = requestBody != null;
+        if (hasRequestBody || !hasFileParameterMap) {
+            //存在request body 或 不存在file参数时
+            resolveRequestBodyConfig(requestBase, requestConfig);
+            return;
+        }
 
         resolveBaseRequestConfig(requestBase, requestConfig);
+        Charset requestCharset = getRequestCharset(requestConfig, HttpConstants.UTF_8);
 
-        if (!hasFileParameterMap && !hasRequestBody) {
-            List<NameValuePair> formParamList = ResolveUtils.getFormParamList(requestConfig);
-            if (!formParamList.isEmpty()) {
-                UrlEncodedFormEntity uefEntity = new UrlEncodedFormEntity(formParamList, requestCharset);
-                requestBase.setEntity(uefEntity);
+        //移除Content-Type header
+        requestBase.removeHeaders(HttpHeaders.CONTENT_TYPE);
+
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        builder.setCharset(requestCharset);
+        builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+
+        for (Map.Entry<String, List<File>> entry : fileParameterMap.entrySet()) {
+            String fileKey = entry.getKey();
+            List<File> fileList = entry.getValue();
+            for (File file : fileList) {
+                //相当于<input type="file" name="fileKey"/>
+                FileBody fileBody = new FileBody(file);
+                builder.addPart(fileKey, fileBody);
             }
-        } else {
-            if (hasRequestBody) {
-                StringEntity stringEntity = new StringEntity(requestBody, requestCharset);
-                requestBase.setEntity(stringEntity);
-            } else {
-                if (hasFileParameterMap) {
-                    requestBase.removeHeaders(HttpHeaders.CONTENT_TYPE);
-                    MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-                    for (Map.Entry<String, List<File>> entry : fileParameterMap.entrySet()) {
-                        String fileKey = entry.getKey();
-                        List<File> fileList = entry.getValue();
-                        for (File file : fileList) {
-                            //相当于<input type="file" name="fileKey"/>
-                            FileBody fileBody = new FileBody(file);
-                            builder.addPart(fileKey, fileBody);
-                        }
-                    }
+        }
 
-                    if (hasFormParameter) {
-                        for (Map.Entry<String, List<String>> entry : formParameterMap.entrySet()) {
-                            String paramKey = entry.getKey();
-                            List<String> paramValueList = entry.getValue();
-                            for (String paramValue : paramValueList) {
-                                //相当于<input type="text" name="paramKey"/>
-                                StringBody stringBody = new StringBody(paramValue, ContentType.create(ContentType.TEXT_PLAIN.getMimeType(), requestCharset));
-                                builder.addPart(paramKey, stringBody);
-                            }
-                        }
+        Map<String, List<String>> formParameterMap = requestConfig.getFormParameterMap();
+        boolean hasFormParameter = !formParameterMap.isEmpty();
 
-                    }
-                    requestBase.setEntity(builder.build());
+        if (hasFormParameter) {
+            for (Map.Entry<String, List<String>> entry : formParameterMap.entrySet()) {
+                String paramKey = entry.getKey();
+                List<String> paramValueList = entry.getValue();
+                for (String paramValue : paramValueList) {
+                    //相当于<input type="text" name="paramKey"/>
+                    StringBody stringBody = new StringBody(paramValue, ContentType.create(ContentType.TEXT_PLAIN.getMimeType(), requestCharset));
+                    builder.addPart(paramKey, stringBody);
                 }
             }
         }
+
+        requestBase.setEntity(builder.build());
     }
 
+    /**
+     * 设置请求头和requestConfig
+     *
+     * @param requestBase
+     * @param requestConfig
+     */
     protected void setHeaderAndRequestConfig(HttpRequestBase requestBase, BaseRequestConfig requestConfig) {
         //设置config
         requestBase.setConfig(getRequestConfig(requestConfig));
@@ -233,6 +301,12 @@ public class ZRequest {
         }
     }
 
+    /**
+     * 获取requestConfig
+     *
+     * @param baseRequestConfig
+     * @return
+     */
     protected RequestConfig getRequestConfig(BaseRequestConfig baseRequestConfig) {
         int socketTimeout = baseRequestConfig.getSocketTimeout();
         int connectTimeout = baseRequestConfig.getConnectTimeout();
@@ -275,8 +349,8 @@ public class ZRequest {
             if (entity != null) {
                 presponse.setEntity(entity);
                 if (!hasHandler) {
-                    //不存在handler时默认设置body内容
-                    presponse.setBody(ResolveUtils.copyToByteArray(entity.getContent()));
+                    //不存在handler时默认设置body内容（此种方式会关闭流，提前放到body中，但不适合大文件的处理）
+                    presponse.setBody(presponse.getBody());
                 }
 
                 Header contentTypeHeader = entity.getContentType();

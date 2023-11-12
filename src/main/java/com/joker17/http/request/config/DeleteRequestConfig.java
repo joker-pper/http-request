@@ -11,7 +11,7 @@ import lombok.ToString;
 @RequiredArgsConstructor(staticName = "of")
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class DeleteRequestConfig extends RequestBodyConfig<DeleteRequestConfig> {
+public class DeleteRequestConfig extends RequestBodyAndFileConfig<DeleteRequestConfig> {
 
     {
         method = HttpConstants.DELETE_METHOD;

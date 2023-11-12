@@ -142,7 +142,7 @@ public class ResolveUtils {
         return EntityUtils.toString(entity, defaultCharset);
     }
 
-    public static String toString(final InputStream inStream, final int contentLength, final ContentType contentType) throws IOException {
+    public static String toString(final InputStream inStream, final long contentLength, final ContentType contentType) throws IOException {
         return toString(inStream, contentLength, getCharset(contentType));
     }
 
@@ -158,17 +158,17 @@ public class ResolveUtils {
         return charset;
     }
 
-    public static String toString(final InputStream inStream, final int contentLength, Charset charset) throws IOException {
+    public static String toString(final InputStream inStream, final long contentLength, Charset charset) throws IOException {
         if (inStream == null) {
             return null;
         }
         try {
             Args.check(contentLength <= Integer.MAX_VALUE, "HTTP data too large to be buffered in memory");
-            int capacity = contentLength;
-
+            int capacity = (int) contentLength;
             if (capacity < 0) {
                 capacity = DEFAULT_BUFFER_SIZE;
             }
+
             if (charset == null) {
                 charset = HTTP.DEF_CONTENT_CHARSET;
             }

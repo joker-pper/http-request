@@ -52,20 +52,25 @@ public class PResponse implements Serializable {
     }
 
     public String getText(Charset charset) throws IOException {
-        return ResolveUtils.toString(getContent(), (int)getContentLength(), charset);
+        return ResolveUtils.toString(getContent(), getContentLength(), charset);
     }
 
     public byte[] getBody() throws IOException {
         if (body == null) {
-            body = ResolveUtils.copyToByteArray(entity.getContent());
+            body = ResolveUtils.copyToByteArray(getContent());
         }
         return body;
     }
 
     public InputStream getContent() throws IOException {
         if (body != null) {
-            return new ByteArrayInputStream(getBody());
+            return new ByteArrayInputStream(body);
         }
+
+        if (entity == null) {
+            return new ByteArrayInputStream(new byte[0]);
+        }
+
         return entity.getContent();
     }
 
