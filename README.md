@@ -7,7 +7,9 @@
 
  - 使用httpclient对部分常用方式进行封装,无需关注过多细节
  - 通过链式进行请求参数的设置,获取http方法对应的请求执行结果
- - v1.0.1: 提供handler进行自定义解析结果(存在时不再默认填充body数据)
+ - v1.0.1: 提供handler进行自定义解析结果(存在时不再默认填充body数据)或用于大文件的处理
+ - v1.0.2: 提供callback可进行自定义增加或覆写client request config
+ - v1.0.3: Delete方法增加支持 formParameter 和 fileParameter
 
 > 引入方式
  
