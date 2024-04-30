@@ -11,7 +11,10 @@ import org.apache.http.entity.ContentType;
 
 import java.io.Serializable;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @Data
 public class BaseRequestConfig<T> implements Serializable {
@@ -41,10 +44,23 @@ public class BaseRequestConfig<T> implements Serializable {
     private Charset charset = HttpConstants.UTF_8;
 
     @Setter(value = AccessLevel.NONE)
-    private int connectTimeout = -1;
+    /**
+     * 连接目标服务器超时时间 *
+     */
+    private Integer connectTimeout;
 
     @Setter(value = AccessLevel.NONE)
-    private int socketTimeout = -1;
+    /**
+     * 读取目标服务器数据超时时间 *
+     */
+    private Integer socketTimeout;
+
+    @Setter(value = AccessLevel.NONE)
+    /**
+     * 从连接池中取连接的超时时间 *
+     */
+    private Integer connectionRequestTimeout;
+
 
     @Setter(value = AccessLevel.NONE)
     /**
@@ -55,6 +71,9 @@ public class BaseRequestConfig<T> implements Serializable {
 
     @Setter(value = AccessLevel.NONE)
     private Boolean redirectsEnabled;
+
+    @Setter(value = AccessLevel.NONE)
+    private Integer maxRedirects;
 
     @Setter(value = AccessLevel.NONE)
     private RequestConfigCallback configCallback;
@@ -83,6 +102,11 @@ public class BaseRequestConfig<T> implements Serializable {
         return (T) this;
     }
 
+    public T setConnectionRequestTimeout(int connectionRequestTimeout) {
+        this.connectionRequestTimeout = connectionRequestTimeout;
+        return (T) this;
+    }
+
     public T setCookieSpec(String cookieSpec) {
         this.cookieSpec = cookieSpec;
         return (T) this;
@@ -90,6 +114,11 @@ public class BaseRequestConfig<T> implements Serializable {
 
     public T setRedirectsEnabled(boolean redirectsEnabled) {
         this.redirectsEnabled = redirectsEnabled;
+        return (T) this;
+    }
+
+    public T setMaxRedirects(int maxRedirects) {
+        this.maxRedirects = maxRedirects;
         return (T) this;
     }
 

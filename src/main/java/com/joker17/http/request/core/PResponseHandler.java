@@ -26,10 +26,26 @@ public abstract class PResponseHandler<P, Z extends BaseRequestConfig> {
     /**
      * 处理返回结果
      *
+     * @param request
      * @param response
      * @return
      * @throws IOException
      */
-    public abstract P handleResponse(PResponse response) throws IOException;
+    public P handleResponse(HttpRequestBase request, PResponse response) throws IOException {
+        return handleResponse(response);
+    }
+
+    /**
+     * 处理返回结果
+     *
+     * @param response
+     * @return
+     * @throws IOException
+     * @see #handleResponse(HttpRequestBase, PResponse)
+     */
+    @Deprecated
+    public P handleResponse(PResponse response) throws IOException {
+        throw new UnsupportedOperationException();
+    }
 
 }

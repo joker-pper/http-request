@@ -3,7 +3,10 @@ package com.joker17.http.request.core;
 import com.joker17.http.request.config.*;
 import com.joker17.http.request.support.HttpClientUtils;
 import com.joker17.http.request.support.ResolveUtils;
-import org.apache.http.*;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -308,15 +311,18 @@ public class ZRequest {
      * @return
      */
     protected RequestConfig getRequestConfig(BaseRequestConfig baseRequestConfig) {
-        int socketTimeout = baseRequestConfig.getSocketTimeout();
-        int connectTimeout = baseRequestConfig.getConnectTimeout();
-        RequestConfig.Builder builder = RequestConfig.custom().setSocketTimeout(socketTimeout).setConnectTimeout(connectTimeout);
-        if (baseRequestConfig.getCookieSpec() != null) {
-            builder.setCookieSpec(baseRequestConfig.getCookieSpec());
+        RequestConfig defaultRequestConfig = HttpClientUtils.getDefaultRequestConfig();
+
+        RequestConfig.Builder builder;
+        if (defaultRequestConfig != null) {
+            //支持从全局默认配置中copy
+            builder = RequestConfig.copy(defaultRequestConfig);
+        } else {
+            builder = RequestConfig.custom();
         }
-        if (baseRequestConfig.getRedirectsEnabled() != null) {
-            builder.setRedirectsEnabled(baseRequestConfig.getRedirectsEnabled());
-        }
+
+        //构建requestConfig
+        buildRequestConfig(builder, baseRequestConfig);
 
         RequestConfigCallback configCallback = baseRequestConfig.getConfigCallback();
         if (configCallback != null) {
@@ -325,6 +331,42 @@ public class ZRequest {
 
         RequestConfig requestConfig = builder.build();
         return requestConfig;
+    }
+
+    /**
+     * 构建requestConfig
+     *
+     * @param builder
+     * @param baseRequestConfig
+     */
+    protected void buildRequestConfig(RequestConfig.Builder builder, BaseRequestConfig baseRequestConfig) {
+
+        //connectTimeout、socketTimeout、connectionRequestTimeout存在时进行赋值
+        if (baseRequestConfig.getConnectTimeout() != null) {
+            builder.setConnectTimeout(baseRequestConfig.getConnectTimeout());
+        }
+
+        if (baseRequestConfig.getSocketTimeout() != null) {
+            builder.setSocketTimeout(baseRequestConfig.getSocketTimeout());
+        }
+
+        if (baseRequestConfig.getConnectionRequestTimeout() != null) {
+            builder.setConnectionRequestTimeout(baseRequestConfig.getConnectionRequestTimeout());
+        }
+
+        //其他参数存在时进行赋值
+        if (baseRequestConfig.getCookieSpec() != null) {
+            builder.setCookieSpec(baseRequestConfig.getCookieSpec());
+        }
+
+        if (baseRequestConfig.getRedirectsEnabled() != null) {
+            builder.setRedirectsEnabled(baseRequestConfig.getRedirectsEnabled());
+        }
+
+        if (baseRequestConfig.getMaxRedirects() != null) {
+            builder.setMaxRedirects(baseRequestConfig.getMaxRedirects());
+        }
+
     }
 
     protected <P, Z extends BaseRequestConfig> P resolveResponse(final HttpRequestBase request, final Z requestConfig, PResponseHandler<P, Z> handler) throws IOException {
@@ -370,35 +412,15 @@ public class ZRequest {
                 }
 
                 contentEncodingHeader = response.getFirstHeader(HttpHeaders.CONTENT_ENCODING);
-                Header contentLengthHeader = response.getFirstHeader(HttpHeaders.CONTENT_LENGTH);
-                if (contentLengthHeader != null) {
-                    HeaderElement[] elements = contentLengthHeader.getElements();
-                    if (elements != null) {
-                        for (HeaderElement element : elements) {
-                            String name = element.getName();
-                            if (name != null && name.length() > 0) {
-                                try {
-                                    contentLength = Long.parseLong(element.getName());
-                                } catch (NumberFormatException e) {
-
-                                }
-                            }
-                            if (contentLength != null) {
-                                break;
-                            }
-                        }
-                    }
-                }
+                contentLength = ResolveUtils.getContentLength(response.getFirstHeader(HttpHeaders.CONTENT_LENGTH));
             }
 
-            if (contentEncodingHeader != null) {
-                presponse.setContentEncoding(contentEncodingHeader.toString());
-            }
+            presponse.setContentEncoding(ResolveUtils.getContentEncoding(contentEncodingHeader));
             presponse.setContentLength(contentLength == null ? -1L : contentLength);
             presponse.setLocale(response.getLocale());
 
             if (hasHandler) {
-                return handler.handleResponse(presponse);
+                return handler.handleResponse(request, presponse);
             }
         } finally {
             try {
@@ -417,6 +439,16 @@ public class ZRequest {
             cookieStore = ResolveUtils.getCookieStore(httpClient);
         }
         return cookieStore;
+    }
+
+    /**
+     * 关闭
+     *
+     * @throws IOException
+     */
+    public void close() throws IOException {
+        cookieStore = null;
+        httpClient.close();
     }
 
 }

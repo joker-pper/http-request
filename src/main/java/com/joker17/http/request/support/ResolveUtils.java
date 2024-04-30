@@ -3,9 +3,7 @@ package com.joker17.http.request.support;
 import com.joker17.http.request.config.BaseRequestConfig;
 import com.joker17.http.request.core.HttpConstants;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.ParseException;
+import org.apache.http.*;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.entity.ContentType;
@@ -65,6 +63,31 @@ public class ResolveUtils {
             builder.append(params.startsWith("?") || params.startsWith("&") ? params.substring(1) : params);
         }
         return builder.toString();
+    }
+
+    public static int copy(Reader in, Writer out) throws IOException {
+        Args.notNull(in, "No Reader specified");
+        Args.notNull(out, "No Writer specified");
+        try {
+            int byteCount = 0;
+            char[] buffer = new char[DEFAULT_BUFFER_SIZE];
+            int bytesRead = -1;
+            while ((bytesRead = in.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead);
+                byteCount += bytesRead;
+            }
+            out.flush();
+            return byteCount;
+        } finally {
+            try {
+                in.close();
+            } catch (IOException ex) {
+            }
+            try {
+                out.close();
+            } catch (IOException ex) {
+            }
+        }
     }
 
     public static int copy(InputStream in, OutputStream out) throws IOException {
@@ -238,6 +261,60 @@ public class ResolveUtils {
             } catch (Exception e) {
                 //获取cookieStore失败
                 throw new RuntimeException("get cookie store error", e);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 解析contentLength值
+     *
+     * @param contentLengthHeader
+     * @return
+     */
+    public static Long getContentLength(Header contentLengthHeader) {
+        if (contentLengthHeader == null) {
+            return null;
+        }
+
+        HeaderElement[] elements = contentLengthHeader.getElements();
+        if (elements == null) {
+            return null;
+        }
+
+        for (HeaderElement element : elements) {
+            String name = element.getName();
+            if (name != null && name.length() > 0) {
+                try {
+                    return Long.parseLong(element.getName());
+                } catch (NumberFormatException e) {
+
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 解析contentEncoding值
+     *
+     * @param contentEncodingHeader
+     * @return
+     */
+    public static String getContentEncoding(Header contentEncodingHeader) {
+        if (contentEncodingHeader == null) {
+            return null;
+        }
+
+        HeaderElement[] elements = contentEncodingHeader.getElements();
+        if (elements == null) {
+            return null;
+        }
+
+        for (HeaderElement element : elements) {
+            String name = element.getName();
+            if (name != null && name.length() > 0) {
+                return name;
             }
         }
         return null;
