@@ -1,6 +1,7 @@
 package com.joker17.http.request.core;
 
 import org.apache.http.entity.ContentType;
+
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -44,4 +45,5 @@ public class HttpConstants {
     public static final String PATCH_METHOD = "PATCH";
     public static final String DELETE_METHOD = "DELETE";
 
+    public static final byte[] EMPTY_BYTES = new byte[0];
 }
