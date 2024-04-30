@@ -1,11 +1,18 @@
 package com.joker17.http.request.core;
 
-import com.joker17.http.request.config.*;
+import com.joker17.http.request.config.GetRequestConfig;
+import com.joker17.http.request.config.HeadRequestConfig;
+import com.joker17.http.request.config.PostRequestConfig;
+import com.joker17.http.request.config.RequestConfigCallback;
+import com.joker17.http.request.support.HttpClientSupportConfigCallback;
+import com.joker17.http.request.support.HttpClientUtils;
 import com.joker17.http.request.support.ResolveUtils;
 import org.apache.http.Header;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -19,6 +26,34 @@ import java.util.Map;
 public class ZRequestTest {
 
     private String userDir = System.getProperty("user.dir");
+
+    @BeforeClass
+    public static void beforeClass() {
+
+        HttpClientUtils.setDefaultRequestConfig(RequestConfig.custom()
+                .setConnectTimeout(5000)
+                .setSocketTimeout(5000)
+                .setConnectionRequestTimeout(5000)
+                .build());
+
+        HttpClientUtils.setDefaultHttpClientSupportConfigCallback(new HttpClientSupportConfigCallback() {
+
+            @Override
+            public void executeDefaultHttp(HttpClientBuilder builder) {
+                builder.setUserAgent(HttpConstants.USER_AGENTS[2]);
+                builder.setMaxConnTotal(500);
+                builder.setMaxConnPerRoute(60);
+            }
+
+            @Override
+            public void executeIgnoreVerifySSLHttp(HttpClientBuilder builder) {
+                builder.setUserAgent(HttpConstants.USER_AGENTS[2]);
+                builder.setMaxConnTotal(500);
+                builder.setMaxConnPerRoute(60);
+            }
+        });
+
+    }
 
     @Test
     public void testConfig() throws IOException {
@@ -85,6 +120,8 @@ public class ZRequestTest {
             System.out.println(String.format("[Header] %s: %s", header.getName(), header.getValue()));
         }
 
+        //清理资源
+        response.clear();
     }
 
     @Test
@@ -116,6 +153,9 @@ public class ZRequestTest {
 
         System.out.println(String.format("[file name]: %s ", filename));
         System.out.println("=======================================================");
+
+        //清理资源
+        headResponse.clear();
 
         int count = contentLength == -1 || contentLength <= 1024 * 10 ? 1 : 4;
         long avgLength = contentLength / count;
@@ -156,6 +196,8 @@ public class ZRequestTest {
             byteArrayOutputStream.write(response.getBody());
             byteArrayOutputStream.flush();
 
+            //清理资源
+            response.clear();
             if (statusCode == 200) {
                 break;
             }
@@ -242,7 +284,7 @@ public class ZRequestTest {
                 }
 
                 @Override
-                public PResponse handleResponse(PResponse response) throws IOException {
+                public PResponse handleResponse(HttpRequestBase request, PResponse response) throws IOException {
                     response.writeTo(new FileOutputStream(file, true));
                     return response;
                 }
@@ -265,6 +307,8 @@ public class ZRequestTest {
                 System.out.println("=======================================================");
             }
 
+            //清理资源
+            response.clear();
         }
 
         System.out.println(String.format("[file name]: %s download.", filename));
