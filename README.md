@@ -8,8 +8,9 @@
  - 使用httpclient对部分常用方式进行封装,无需关注过多细节
  - 通过链式进行请求参数的设置,获取http方法对应的请求执行结果
  - v1.0.1: 提供handler进行自定义解析结果(存在时不再默认填充body数据)或用于大文件的处理
- - v1.0.2: 提供callback可进行自定义增加或覆写client request config
+ - v1.0.2: 提供callback可进行自定义增加或覆写client request config；支持postman bulk data数据解析
  - v1.0.3: Delete方法增加支持 formParameter 和 fileParameter
+ - v1.0.4: PResponse增加clear方法、ZRequest增加close方法；提供全局设置default request config；提供全局设置default httpClient config callback；
 
 > 引入方式
  
@@ -71,13 +72,51 @@ fileParameter    -> 非requestBody时添加(Post,Put,Patch,Delete)
   提供增加或覆写client request config（v1.0.2）
   
 ```
-    PostRequestConfig.of().setUrl("https://xxxx.com").setConfigCallback(new RequestConfigCallback<RequestConfig.Builder>() {
-        @Override
-        public void execute(RequestConfig.Builder builder) {
-            builder.setCircularRedirectsAllowed(true).setMaxRedirects(10);
-        }
-    });
+        PostRequestConfig.of().setUrl("https://xxxx.com").setConfigCallback(new RequestConfigCallback<RequestConfig.Builder>() {
+            @Override
+            public void execute(RequestConfig.Builder builder) {
+                builder.setCircularRedirectsAllowed(true).setMaxRedirects(10);
+            }
+        });
 ```
+
+  提供全局设置default request config（v1.0.4）
+
+```
+   
+        HttpClientUtils.setDefaultRequestConfig(RequestConfig.custom()
+                .setConnectTimeout(5000)
+                .setSocketTimeout(5000)
+                .setConnectionRequestTimeout(5000)
+                .build());
+
+```
+
+  提供全局设置default httpClientSupport config callback（v1.0.4）
+
+```
+        HttpClientUtils.setDefaultHttpClientSupportConfigCallback(new HttpClientSupportConfigCallback() {
+
+            @Override
+            public void executeDefaultHttp(HttpClientBuilder builder) {
+                builder.setUserAgent(HttpConstants.USER_AGENTS[2]);
+                builder.setMaxConnTotal(500);
+                builder.setMaxConnPerRoute(60);
+            }
+
+            @Override
+            public void executeIgnoreVerifySSLHttp(HttpClientBuilder builder) {
+                builder.setUserAgent(HttpConstants.USER_AGENTS[2]);
+                builder.setMaxConnTotal(500);
+                builder.setMaxConnPerRoute(60);
+            }
+        });
+   
+```
+
+> 相关文档
+
+[HttpClientBuilder使用](docs/HttpClientBuilder使用.md)
 
 > 其他
 
