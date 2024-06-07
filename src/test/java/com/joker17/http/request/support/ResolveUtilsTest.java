@@ -8,10 +8,33 @@ import org.junit.Test;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.util.*;
+
+import static org.junit.Assert.assertEquals;
 
 public class ResolveUtilsTest {
     private String userDir = System.getProperty("user.dir");
+
+    @Test
+    public void testResolveUrl() {
+        assertEquals("https://baidu.com?username=xxx&step=2", ResolveUtils.resolveUrl("https://baidu.com", "username=xxx&step=2"));
+        assertEquals("https://baidu.com?username=xxx&step=2", ResolveUtils.resolveUrl("https://baidu.com?", "username=xxx&step=2"));
+        assertEquals("https://baidu.com?age=xxx&step=2&username=xxx&step=2", ResolveUtils.resolveUrl("https://baidu.com?age=xxx&step=2", "username=xxx&step=2"));
+    }
+
+    @Test
+    public void testGetURI() {
+        Map<String, List<String>> parameterMap = new LinkedHashMap<>(8);
+
+        parameterMap.put("username", Collections.singletonList("xxx"));
+        parameterMap.put("step", Collections.singletonList("2"));
+
+        assertEquals(URI.create("https://baidu.com?username=xxx&step=2"), ResolveUtils.getURI("https://baidu.com", ResolveUtils.getNameValuePairList(parameterMap), true, HttpConstants.UTF_8));
+        assertEquals(URI.create("https://baidu.com?username=xxx&step=2"), ResolveUtils.getURI("https://baidu.com?", ResolveUtils.getNameValuePairList(parameterMap), true, HttpConstants.UTF_8));
+        assertEquals(URI.create("https://baidu.com?age=xxx&step=2&username=xxx&step=2"), ResolveUtils.getURI("https://baidu.com?age=xxx&step=2", ResolveUtils.getNameValuePairList(parameterMap), true, HttpConstants.UTF_8));
+    }
+
 
     @Test
     public void transferSimplifyStringMap() {
@@ -98,7 +121,7 @@ public class ResolveUtilsTest {
 
     @Test
     public void testToString() throws IOException {
-        String javaFilePath = ZRequestTest.class.getName().replace(".", "/")  + ".java";
+        String javaFilePath = ZRequestTest.class.getName().replace(".", "/") + ".java";
         final File file = new File(String.format("%s/src/test/java/%s", userDir, javaFilePath));
         String result = ResolveUtils.toString(new FileInputStream(file), -1, HttpConstants.UTF_8);
         Assert.assertNotNull(result);

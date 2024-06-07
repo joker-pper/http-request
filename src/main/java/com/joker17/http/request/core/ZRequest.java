@@ -185,7 +185,7 @@ public class ZRequest {
      * @param defaultCharset
      * @return
      */
-    protected Charset getRequestCharset(BaseRequestConfig requestConfig, Charset defaultCharset) {
+    protected <T> Charset getRequestCharset(BaseRequestConfig<T> requestConfig, Charset defaultCharset) {
         Charset requestCharset = requestConfig.getCharset();
         if (requestCharset != null) {
             return requestCharset;
@@ -200,7 +200,7 @@ public class ZRequest {
      * @param requestBase
      * @param requestConfig
      */
-    protected void resolveBaseRequestConfig(HttpRequestBase requestBase, BaseRequestConfig requestConfig) {
+    protected <T> void resolveBaseRequestConfig(HttpRequestBase requestBase, BaseRequestConfig<T> requestConfig) {
         String url = requestConfig.getUrl();
         Charset requestCharset = getRequestCharset(requestConfig, HttpConstants.UTF_8);
         List<NameValuePair> queryParamList = ResolveUtils.getQueryParamList(requestConfig);
@@ -210,7 +210,7 @@ public class ZRequest {
         setHeaderAndRequestConfig(requestBase, requestConfig);
     }
 
-    protected void resolveRequestBodyConfig(HttpEntityEnclosingRequestBase requestBase, RequestBodyConfig requestConfig) {
+    protected <T> void resolveRequestBodyConfig(HttpEntityEnclosingRequestBase requestBase, RequestBodyConfig<T> requestConfig) {
         String requestBody = requestConfig.getRequestBody();
         Charset requestCharset = getRequestCharset(requestConfig, HttpConstants.UTF_8);
         boolean hasRequestBody = requestBody != null;
@@ -227,7 +227,7 @@ public class ZRequest {
         }
     }
 
-    protected void resolveRequestBodyAndFileConfig(HttpEntityEnclosingRequestBase requestBase, RequestBodyAndFileConfig requestConfig) {
+    protected <T> void resolveRequestBodyAndFileConfig(HttpEntityEnclosingRequestBase requestBase, RequestBodyAndFileConfig<T> requestConfig) {
         Map<String, List<File>> fileParameterMap = requestConfig.getFileParameterMap();
         boolean hasFileParameterMap = !fileParameterMap.isEmpty();
         String requestBody = requestConfig.getRequestBody();
@@ -282,7 +282,7 @@ public class ZRequest {
      * @param requestBase
      * @param requestConfig
      */
-    protected void setHeaderAndRequestConfig(HttpRequestBase requestBase, BaseRequestConfig requestConfig) {
+    protected <T> void setHeaderAndRequestConfig(HttpRequestBase requestBase, BaseRequestConfig<T> requestConfig) {
         //设置config
         requestBase.setConfig(getRequestConfig(requestConfig));
         //设置请求头
@@ -310,7 +310,8 @@ public class ZRequest {
      * @param baseRequestConfig
      * @return
      */
-    protected RequestConfig getRequestConfig(BaseRequestConfig baseRequestConfig) {
+    @SuppressWarnings("rawtypes")
+    protected <T> RequestConfig getRequestConfig(BaseRequestConfig<T> baseRequestConfig) {
         RequestConfig defaultRequestConfig = HttpClientUtils.getDefaultRequestConfig();
 
         RequestConfig.Builder builder;
@@ -329,8 +330,7 @@ public class ZRequest {
             configCallback.execute(builder);
         }
 
-        RequestConfig requestConfig = builder.build();
-        return requestConfig;
+        return builder.build();
     }
 
     /**
@@ -339,7 +339,7 @@ public class ZRequest {
      * @param builder
      * @param baseRequestConfig
      */
-    protected void buildRequestConfig(RequestConfig.Builder builder, BaseRequestConfig baseRequestConfig) {
+    protected <T> void buildRequestConfig(RequestConfig.Builder builder, BaseRequestConfig<T> baseRequestConfig) {
 
         //connectTimeout、socketTimeout、connectionRequestTimeout存在时进行赋值
         if (baseRequestConfig.getConnectTimeout() != null) {
@@ -369,7 +369,7 @@ public class ZRequest {
 
     }
 
-    protected <P, Z extends BaseRequestConfig> P resolveResponse(final HttpRequestBase request, final Z requestConfig, PResponseHandler<P, Z> handler) throws IOException {
+    protected <P, Z extends BaseRequestConfig<T>, T> P resolveResponse(final HttpRequestBase request, final Z requestConfig, PResponseHandler<P, Z> handler) throws IOException {
         CloseableHttpResponse response = null;
         PResponse presponse;
         try {
@@ -428,6 +428,7 @@ public class ZRequest {
                     response.close();
                 }
             } catch (IOException e) {
+                //ignore
             }
         }
         //不存在handler时默认返回PResponse对象

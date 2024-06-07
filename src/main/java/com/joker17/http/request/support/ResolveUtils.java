@@ -65,6 +65,14 @@ public class ResolveUtils {
         return builder.toString();
     }
 
+    /**
+     * copy
+     *
+     * @param in
+     * @param out
+     * @return
+     * @throws IOException
+     */
     public static int copy(Reader in, Writer out) throws IOException {
         Args.notNull(in, "No Reader specified");
         Args.notNull(out, "No Writer specified");
@@ -82,14 +90,24 @@ public class ResolveUtils {
             try {
                 in.close();
             } catch (IOException ex) {
+                //ignore
             }
             try {
                 out.close();
             } catch (IOException ex) {
+                //ignore
             }
         }
     }
 
+    /**
+     * copy
+     *
+     * @param in
+     * @param out
+     * @return
+     * @throws IOException
+     */
     public static int copy(InputStream in, OutputStream out) throws IOException {
         Args.notNull(in, "No InputStream specified");
         Args.notNull(out, "No OutputStream specified");
@@ -107,16 +125,25 @@ public class ResolveUtils {
             try {
                 in.close();
             } catch (IOException e) {
+                //ignore
             }
 
             try {
                 out.close();
             } catch (IOException e) {
+                //ignore
             }
 
         }
     }
 
+    /**
+     * copy
+     *
+     * @param in
+     * @param out
+     * @throws IOException
+     */
     public static void copy(byte[] in, OutputStream out) throws IOException {
         Args.notNull(in, "No input byte array specified");
         Args.notNull(out, "No OutputStream specified");
@@ -126,11 +153,19 @@ public class ResolveUtils {
             try {
                 out.close();
             } catch (IOException e) {
+                //ignore
             }
 
         }
     }
 
+    /**
+     * copyToByteArray
+     *
+     * @param in
+     * @return
+     * @throws IOException
+     */
     public static byte[] copyToByteArray(InputStream in) throws IOException {
         if (in == null) {
             return new byte[0];
@@ -141,26 +176,6 @@ public class ResolveUtils {
         }
     }
 
-    public static ContentType getContentType(final HttpEntity entity, final Charset defaultCharset) throws IOException, ParseException {
-
-        ContentType contentType = null;
-        try {
-            contentType = ContentType.get(entity);
-        } catch (final UnsupportedCharsetException ex) {
-            if (defaultCharset == null) {
-                throw new UnsupportedEncodingException(ex.getMessage());
-            }
-        }
-        if (contentType != null) {
-            if (contentType.getCharset() == null) {
-                contentType = contentType.withCharset(defaultCharset);
-            }
-        } else {
-            contentType = ContentType.DEFAULT_TEXT.withCharset(defaultCharset);
-        }
-        return contentType;
-    }
-
     public static String toString(final HttpEntity entity, final Charset defaultCharset) throws IOException, ParseException {
         return EntityUtils.toString(entity, defaultCharset);
     }
@@ -169,18 +184,16 @@ public class ResolveUtils {
         return toString(inStream, contentLength, getCharset(contentType));
     }
 
-    public static Charset getCharset(final ContentType contentType) {
-        Charset charset = null;
-        if (contentType != null) {
-            charset = contentType.getCharset();
-            if (charset == null) {
-                final ContentType defaultContentType = ContentType.getByMimeType(contentType.getMimeType());
-                charset = defaultContentType != null ? defaultContentType.getCharset() : null;
-            }
-        }
-        return charset;
-    }
 
+    /**
+     * toString
+     *
+     * @param inStream
+     * @param contentLength 小于0时会为默认buffer size，注意：不能过大
+     * @param charset       字符集
+     * @return
+     * @throws IOException
+     */
     public static String toString(final InputStream inStream, final long contentLength, Charset charset) throws IOException {
         if (inStream == null) {
             return null;
@@ -208,6 +221,15 @@ public class ResolveUtils {
         }
     }
 
+    /**
+     * 当拼接参数时，将paramList进行放到url上，并返回URI对象
+     *
+     * @param url
+     * @param paramList
+     * @param appendParams 是否拼接参数
+     * @param charset
+     * @return
+     */
     public static URI getURI(String url, List<NameValuePair> paramList, boolean appendParams, Charset charset) {
         if (url == null || url.isEmpty()) {
             throw new IllegalArgumentException("uri must not be empty.");
@@ -217,35 +239,66 @@ public class ResolveUtils {
                 String formParamsStr = EntityUtils.toString(new UrlEncodedFormEntity(paramList, charset));
                 url = resolveUrl(url, formParamsStr);
             } catch (IOException e) {
+                //ignore
             }
         }
         return URI.create(url);
     }
 
-    public static List<NameValuePair> getFormParamList(BaseRequestConfig requestConfig) {
+    /**
+     * 获取表单参数列表 （结果一定不为null，但数据不存在时会为Collections.emptyList()）
+     *
+     * @param requestConfig
+     * @param <T>
+     * @return
+     */
+    public static <T> List<NameValuePair> getFormParamList(BaseRequestConfig<T> requestConfig) {
         return getNameValuePairList(requestConfig != null ? requestConfig.getFormParameterMap() : null);
     }
 
-    public static List<NameValuePair> getQueryParamList(BaseRequestConfig requestConfig) {
+    /**
+     * 获取查询参数列表 （结果一定不为null，但数据不存在时会为Collections.emptyList()）
+     *
+     * @param requestConfig
+     * @param <T>
+     * @return
+     */
+    public static <T> List<NameValuePair> getQueryParamList(BaseRequestConfig<T> requestConfig) {
         return getNameValuePairList(requestConfig != null ? requestConfig.getQueryParameterMap() : null);
     }
 
+    /**
+     * 转换参数map为nameValuePairList （结果一定不为null，但数据不存在时会为Collections.emptyList()）
+     *
+     * @param parameterMap 参数map
+     * @return 不为null的结果列表
+     */
     public static List<NameValuePair> getNameValuePairList(Map<String, List<String>> parameterMap) {
+        if (parameterMap == null || parameterMap.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         List<NameValuePair> resultList = new ArrayList<>(16);
-        if (parameterMap != null) {
-            for (Map.Entry<String, List<String>> entry : parameterMap.entrySet()) {
-                String paramKey = entry.getKey();
-                List<String> paramValueList = entry.getValue();
-                if (paramValueList != null) {
-                    for (String paramValue : paramValueList) {
-                        resultList.add(new BasicNameValuePair(paramKey, paramValue));
-                    }
+
+        for (Map.Entry<String, List<String>> entry : parameterMap.entrySet()) {
+            String paramKey = entry.getKey();
+            List<String> paramValueList = entry.getValue();
+            if (paramValueList != null) {
+                for (String paramValue : paramValueList) {
+                    resultList.add(new BasicNameValuePair(paramKey, paramValue));
                 }
             }
         }
+
         return resultList;
     }
 
+    /**
+     * 获取cookieStore
+     *
+     * @param httpClient
+     * @return
+     */
     public static CookieStore getCookieStore(CloseableHttpClient httpClient) {
         if (httpClient != null) {
             try {
@@ -264,6 +317,52 @@ public class ResolveUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * 获取contentType （若未从entity中解析出结果，则兜底为text/plain和默认字符集的结果）
+     *
+     * @param entity
+     * @param defaultCharset
+     * @return
+     * @throws IOException
+     * @throws ParseException
+     */
+    public static ContentType getContentType(final HttpEntity entity, final Charset defaultCharset) throws IOException, ParseException {
+        ContentType contentType = null;
+        try {
+            contentType = ContentType.get(entity);
+        } catch (final UnsupportedCharsetException ex) {
+            if (defaultCharset == null) {
+                throw new UnsupportedEncodingException(ex.getMessage());
+            }
+        }
+        if (contentType != null) {
+            if (contentType.getCharset() == null) {
+                contentType = contentType.withCharset(defaultCharset);
+            }
+        } else {
+            contentType = ContentType.DEFAULT_TEXT.withCharset(defaultCharset);
+        }
+        return contentType;
+    }
+
+    /**
+     * 获取字符集
+     *
+     * @param contentType
+     * @return
+     */
+    public static Charset getCharset(final ContentType contentType) {
+        Charset charset = null;
+        if (contentType != null) {
+            charset = contentType.getCharset();
+            if (charset == null) {
+                final ContentType defaultContentType = ContentType.getByMimeType(contentType.getMimeType());
+                charset = defaultContentType != null ? defaultContentType.getCharset() : null;
+            }
+        }
+        return charset;
     }
 
     /**
@@ -288,7 +387,7 @@ public class ResolveUtils {
                 try {
                     return Long.parseLong(element.getName());
                 } catch (NumberFormatException e) {
-
+                    //ignore
                 }
             }
         }
@@ -380,19 +479,21 @@ public class ResolveUtils {
     }
 
     /**
-     * 解析多组数据
+     * 解析多组数据 （支持注释数据，及key对应多个参数值）
      *
      * @param data                       支持postman bulk edit data / chrome复制的请求头内容
      *
      *                                   <p>
      *                                   e.g:
-     *                                   key1:value1
+     *                                   key1:value1  【常规，推荐】
+     *                                   <p>
      *                                   key2:\\n
-     *                                   value2
-     *                                   //key3:value3
-     * @param separator                  分割符, e.g:
+     *                                   value2   【换行】
+     *                                   <p>
+     *                                   //key3:value3  【注释】
+     * @param separator                  分割符, 常规':', 也可进行自定义
      * @param removeValueFirstBlankSpace 是否移除value的第一个空格
-     * @param continueKeys               跳过keys
+     * @param continueKeys               跳过keys，将不解析对应key的数据到结果中
      * @return
      */
     public static Map<String, List<String>> convertBulkDataMap(String data, String separator, boolean removeValueFirstBlankSpace, String... continueKeys) {
