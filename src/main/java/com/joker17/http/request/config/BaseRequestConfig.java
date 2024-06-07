@@ -176,7 +176,7 @@ public class BaseRequestConfig<T> implements Serializable {
 
         List<String> headerValues = headerParameterMap.get(headerKey);
         if (headerValues == null) {
-            headerValues = new ArrayList<>(16);
+            headerValues = new ArrayList<>(4);
             headerParameterMap.put(headerKey, headerValues);
         }
 
@@ -217,7 +217,7 @@ public class BaseRequestConfig<T> implements Serializable {
 
         List<String> headerValues = headerParameterMap.get(headerKey);
         if (headerValues == null) {
-            headerValues = new ArrayList<>(16);
+            headerValues = new ArrayList<>(4);
             headerParameterMap.put(headerKey, headerValues);
         }
 
