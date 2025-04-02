@@ -624,4 +624,25 @@ public class ResolveUtils {
         }
         return resultMap;
     }
+
+    /**
+     * 简单解析模板进行获取替换参数后的结果
+     *
+     * @param template 模板  （参数占位符为 ${key}，即参数map中数据的key名）
+     * @param paramMap 参数map map的value支持各种类型（为了支持int/long等无需转换使用Object），但推荐值是String，如果值为null也会被替换为null
+     * @return
+     */
+    public static String parseByTemplate(String template, Map<String, ?> paramMap) {
+        String result = template;
+        if (paramMap != null && !paramMap.isEmpty()) {
+            //进行替换参数map中的变量值
+            for (Map.Entry<String, ?> paramMapEntry : paramMap.entrySet()) {
+                String key = paramMapEntry.getKey();
+                Object value = paramMapEntry.getValue();
+                //将 ${key} 替换为对应的值
+                result = StringUtils.replace(result, String.format("${%s}", key), Objects.toString(value));
+            }
+        }
+        return result;
+    }
 }

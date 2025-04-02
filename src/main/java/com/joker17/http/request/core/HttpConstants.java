@@ -12,6 +12,10 @@ public class HttpConstants {
     public static final Charset ASCII = Charset.forName("US-ASCII");
     public static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
 
+    public static final String CHARSET_STR = "CHARSET";
+    public static final String SEMICOLON_STR = ";";
+    public static final String EQUAL_SIGN_STR = "=";
+
     public static final String WILDCARD = "*/*";
     public static final String TEXT_PLAIN = "text/plain";
     public static final String TEXT_XML = "text/xml";

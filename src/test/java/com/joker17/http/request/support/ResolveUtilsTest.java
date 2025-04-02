@@ -120,6 +120,26 @@ public class ResolveUtilsTest {
     }
 
     @Test
+    public void parseByTemplate() {
+        Assert.assertEquals("${key}:${value}", ResolveUtils.parseByTemplate("${key}:${value}", Collections.singletonMap("s", "s")));
+        Assert.assertEquals("${key}:${value}", ResolveUtils.parseByTemplate("${key}:${value}", Collections.singletonMap("Key", "mykey")));
+        Assert.assertEquals("${key}:${value}", ResolveUtils.parseByTemplate("${key}:${value}", Collections.singletonMap("Value", "myvalue")));
+
+        Assert.assertEquals("mykey:${value}", ResolveUtils.parseByTemplate("${key}:${value}", Collections.singletonMap("key", "mykey")));
+        Assert.assertEquals("${key}:myvalue", ResolveUtils.parseByTemplate("${key}:${value}", Collections.singletonMap("value", "myvalue")));
+
+        Assert.assertEquals("${key}:1", ResolveUtils.parseByTemplate("${key}:${value}", Collections.singletonMap("value", 1)));
+        Assert.assertEquals("${key}:null", ResolveUtils.parseByTemplate("${key}:${value}", Collections.singletonMap("value", null)));
+
+        Map<String, Object> dataMap = new HashMap<>();
+        dataMap.put("key", "mykey");
+        dataMap.put("value", "myvalue");
+
+        Assert.assertEquals("mykey:myvalue", ResolveUtils.parseByTemplate("${key}:${value}", dataMap));
+        Assert.assertEquals("mykey:myvalue, result: myvalue", ResolveUtils.parseByTemplate("${key}:${value}, result: ${value}", dataMap));
+    }
+
+    @Test
     public void testToString() throws IOException {
         String javaFilePath = ZRequestTest.class.getName().replace(".", "/") + ".java";
         final File file = new File(String.format("%s/src/test/java/%s", userDir, javaFilePath));

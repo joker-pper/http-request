@@ -6,6 +6,7 @@ import com.joker17.http.request.support.ValidateUtils;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.entity.ContentType;
 
@@ -132,7 +133,28 @@ public class BaseRequestConfig<T> implements Serializable {
         return (T) this;
     }
 
+    /**
+     * 设置contentType （支持仅mimeType及携带charset的固定格式）
+     *
+     * @param mimeType e.g: text/plain  text/html; charset=utf-8
+     * @return
+     */
     public T setContentType(String mimeType) {
+        if (mimeType.contains(HttpConstants.SEMICOLON_STR)) {
+            String toUpperCaseMimeType = mimeType.toUpperCase();
+            int index = toUpperCaseMimeType.indexOf(HttpConstants.CHARSET_STR);
+            String charsetStr = null;
+            if (index != -1) {
+                toUpperCaseMimeType = toUpperCaseMimeType.substring(index + HttpConstants.CHARSET_STR.length());
+                charsetStr = toUpperCaseMimeType.substring(toUpperCaseMimeType.indexOf(HttpConstants.EQUAL_SIGN_STR) + 1).trim();
+            }
+            String removeSemicolonMimeType = mimeType.substring(0, mimeType.indexOf(HttpConstants.SEMICOLON_STR));
+            if (StringUtils.isNotEmpty(charsetStr)) {
+                return setContentType(removeSemicolonMimeType, charsetStr);
+            } else {
+                return setContentType(removeSemicolonMimeType, charset);
+            }
+        }
         return setContentType(mimeType, charset);
     }
 
