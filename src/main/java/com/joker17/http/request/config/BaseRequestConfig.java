@@ -331,6 +331,14 @@ public class BaseRequestConfig<T> implements Serializable {
         return (T) this;
     }
 
+
+    /**
+     * 进行遍历dataMap，当key存在不为空的列表值时，进行执行回调函数
+     *
+     * @param dataMap  数据Map
+     * @param callback 回调函数
+     * @param <E>      泛型，可使用String / Object类型 （最终值会转换为String）
+     */
     protected <E> void forEachWithListMap(Map<String, List<E>> dataMap, DataMapCallback<List<E>> callback) {
         if (dataMap != null) {
             for (Map.Entry<String, List<E>> entry : dataMap.entrySet()) {
@@ -343,6 +351,13 @@ public class BaseRequestConfig<T> implements Serializable {
         }
     }
 
+    /**
+     * 添加formParameters
+     *
+     * @param formParameterMap 参数Map
+     * @param <E>              泛型，可使用String / Object类型 （最终值会转换为String）
+     * @return
+     */
     public <E> T addFormParameters(Map<String, List<E>> formParameterMap) {
         forEachWithListMap(formParameterMap, new DataMapCallback<List<E>>() {
             @Override
@@ -353,6 +368,13 @@ public class BaseRequestConfig<T> implements Serializable {
         return (T) this;
     }
 
+    /**
+     * 设置formParameters
+     *
+     * @param formParameterMap 参数Map
+     * @param <E>              泛型，可使用String / Object类型 （最终值会转换为String）
+     * @return
+     */
     public <E> T setFormParameters(Map<String, List<E>> formParameterMap) {
         forEachWithListMap(formParameterMap, new DataMapCallback<List<E>>() {
             @Override
@@ -363,6 +385,12 @@ public class BaseRequestConfig<T> implements Serializable {
         return (T) this;
     }
 
+    /**
+     * 清除指定formParameters
+     *
+     * @param names 要清除的names
+     * @return
+     */
     public T clearFormParameters(String... names) {
         if (names != null) {
             for (String name : names) {
@@ -372,6 +400,11 @@ public class BaseRequestConfig<T> implements Serializable {
         return (T) this;
     }
 
+    /**
+     * 清除所有formParameters
+     *
+     * @return
+     */
     public T clearFormParameters() {
         formParameterMap.clear();
         return (T) this;
@@ -408,6 +441,13 @@ public class BaseRequestConfig<T> implements Serializable {
         return (T) this;
     }
 
+    /**
+     * 添加queryParameters
+     *
+     * @param queryParameterMap 参数Map
+     * @param <E>               泛型，可使用String / Object类型 （最终值会转换为String）
+     * @return
+     */
     public <E> T addQueryParameters(Map<String, List<E>> queryParameterMap) {
         forEachWithListMap(queryParameterMap, new DataMapCallback<List<E>>() {
             @Override
@@ -418,6 +458,13 @@ public class BaseRequestConfig<T> implements Serializable {
         return (T) this;
     }
 
+    /**
+     * 设置queryParameters
+     *
+     * @param queryParameterMap 参数Map
+     * @param <E>               泛型，可使用String / Object类型 （最终值会转换为String）
+     * @return
+     */
     public <E> T setQueryParameters(Map<String, List<E>> queryParameterMap) {
         forEachWithListMap(queryParameterMap, new DataMapCallback<List<E>>() {
             @Override
@@ -428,6 +475,12 @@ public class BaseRequestConfig<T> implements Serializable {
         return (T) this;
     }
 
+    /**
+     * 清除指定queryParameters
+     *
+     * @param names 要清除的names
+     * @return
+     */
     public T clearQueryParameters(String... names) {
         if (names != null) {
             for (String name : names) {
@@ -437,6 +490,12 @@ public class BaseRequestConfig<T> implements Serializable {
         return (T) this;
     }
 
+
+    /**
+     * 清除所有queryParameters
+     *
+     * @return
+     */
     public T clearQueryParameters() {
         queryParameterMap.clear();
         return (T) this;

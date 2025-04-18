@@ -1,9 +1,11 @@
 package com.joker17.http.request.support;
 
+import com.joker17.http.request.core.AssertUtils;
 import com.joker17.http.request.core.HttpConstants;
 import com.joker17.http.request.core.ZRequestTest;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.function.ThrowingRunnable;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,8 +21,62 @@ public class ResolveUtilsTest {
     @Test
     public void testResolveUrl() {
         assertEquals("https://baidu.com?username=xxx&step=2", ResolveUtils.resolveUrl("https://baidu.com", "username=xxx&step=2"));
+        assertEquals("https://baidu.com?username=xxx&step=2", ResolveUtils.resolveUrl("https://baidu.com", "?username=xxx&step=2"));
+        assertEquals("https://baidu.com?username=xxx&step=2", ResolveUtils.resolveUrl("https://baidu.com", "&username=xxx&step=2"));
+
         assertEquals("https://baidu.com?username=xxx&step=2", ResolveUtils.resolveUrl("https://baidu.com?", "username=xxx&step=2"));
+        assertEquals("https://baidu.com?username=xxx&step=2", ResolveUtils.resolveUrl("https://baidu.com?", "?username=xxx&step=2"));
+        assertEquals("https://baidu.com?username=xxx&step=2", ResolveUtils.resolveUrl("https://baidu.com?", "&username=xxx&step=2"));
+
         assertEquals("https://baidu.com?age=xxx&step=2&username=xxx&step=2", ResolveUtils.resolveUrl("https://baidu.com?age=xxx&step=2", "username=xxx&step=2"));
+        assertEquals("https://baidu.com?age=xxx&step=2&username=xxx&step=2", ResolveUtils.resolveUrl("https://baidu.com?age=xxx&step=2", "?username=xxx&step=2"));
+        assertEquals("https://baidu.com?age=xxx&step=2&username=xxx&step=2", ResolveUtils.resolveUrl("https://baidu.com?age=xxx&step=2", "&username=xxx&step=2"));
+
+        assertEquals("https://baidu.com?age=xxx&step=2&username=xxx&step=2", ResolveUtils.resolveUrl("https://baidu.com?age=xxx&step=2&", "username=xxx&step=2"));
+        assertEquals("https://baidu.com?age=xxx&step=2&username=xxx&step=2", ResolveUtils.resolveUrl("https://baidu.com?age=xxx&step=2&", "?username=xxx&step=2"));
+        assertEquals("https://baidu.com?age=xxx&step=2&username=xxx&step=2", ResolveUtils.resolveUrl("https://baidu.com?age=xxx&step=2&", "&username=xxx&step=2"));
+    }
+
+    @Test
+    public void testGetCorrectedApiPrefix() {
+        assertEquals("https://baidu.com", ResolveUtils.getCorrectedApiPrefix("https://baidu.com"));
+        assertEquals("https://baidu.com", ResolveUtils.getCorrectedApiPrefix("https://baidu.com/"));
+        assertEquals("https://baidu.com", ResolveUtils.getCorrectedApiPrefix("https://baidu.com//"));
+        assertEquals("", ResolveUtils.getCorrectedApiPrefix("  "));
+        assertEquals("", ResolveUtils.getCorrectedApiPrefix("//"));
+        assertEquals("", ResolveUtils.getCorrectedApiPrefix("    //"));
+    }
+
+    @Test
+    public void testGetCorrectedUrl() {
+        assertEquals("http://localhost/api/v1/list", ResolveUtils.getCorrectedUrl("http://localhost", "/api/v1/list"));
+        assertEquals("http://localhost/api/v1/list", ResolveUtils.getCorrectedUrl("http://localhost/", "/api/v1/list"));
+        assertEquals("http://localhost/api/v1/list", ResolveUtils.getCorrectedUrl("http://localhost/", "api/v1/list"));
+        assertEquals("http://localhost/api/v1/list", ResolveUtils.getCorrectedUrl("http://localhost", "api/v1/list"));
+
+        AssertUtils.assertThrows(IllegalArgumentException.class, "apiPrefix must be not blank", new ThrowingRunnable() {
+            @Override
+            public void run() throws Throwable {
+                ResolveUtils.getCorrectedUrl("", "api/v1/list");
+            }
+        });
+        
+        AssertUtils.assertThrows(IllegalArgumentException.class, "apiPath must be not blank", new ThrowingRunnable() {
+            @Override
+            public void run() throws Throwable {
+                ResolveUtils.getCorrectedUrl("http://localhost", "");
+            }
+        });
+
+
+        AssertUtils.assertThrows(IllegalArgumentException.class, "fixApiPrefix must be not blank", new ThrowingRunnable() {
+            @Override
+            public void run() throws Throwable {
+                ResolveUtils.getCorrectedUrl("//", "api/v1/list");
+            }
+        });
+
+
     }
 
     @Test

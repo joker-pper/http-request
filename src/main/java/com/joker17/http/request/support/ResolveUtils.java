@@ -31,8 +31,8 @@ public class ResolveUtils {
     /**
      * 获取处理的url,参数拼接在url后面
      *
-     * @param url
-     * @param params 参数 e.g: username=xxx&step=2
+     * @param url    url 不能为null  e.g: http://localhost  http://localhost?   http://localhost?a=1 http://localhost?a=1&  http://localhost?a=1&b=2
+     * @param params 参数 可为null e.g: username=xxx&step=2  ?username=xxx&step=2 &username=xxx&step=2
      * @return
      */
     public static String resolveUrl(String url, String params) {
@@ -65,6 +65,42 @@ public class ResolveUtils {
         return builder.toString();
     }
 
+
+    /**
+     * 获取修正后的api前缀 （移除后面多余的/，如有多个也会被移除多次）,如果最终为空白字符将返回空字符串
+     *
+     * @param apiPrefix api前缀  e.g: https://localhost  https://localhost:8080 https://localhost:8080/ https://localhost:8080/user
+     * @return
+     */
+    public static String getCorrectedApiPrefix(String apiPrefix) {
+        if (StringUtils.isBlank(apiPrefix)) {
+            return "";
+        }
+
+        String result = apiPrefix;
+        while (result.endsWith("/")) {
+            result = result.substring(0, result.length() - 1);
+        }
+        return result.trim();
+
+    }
+
+    /**
+     * 获取修正后的url
+     *
+     * @param apiPrefix api前缀  e.g: https://localhost  https://localhost:8080 https://localhost:8080/ https://localhost:8080/user
+     * @param apiPath   api路径 e.g /api/v1/list
+     * @return
+     */
+    public static String getCorrectedUrl(String apiPrefix, String apiPath) {
+        ArgsUtils.notBlank(apiPrefix, "apiPrefix must be not blank");
+        ArgsUtils.notBlank(apiPath, "apiPath must be not blank");
+        String fixApiPrefix = getCorrectedApiPrefix(apiPrefix);
+        ArgsUtils.notBlank(fixApiPrefix, "fixApiPrefix must be not blank");
+        String fixApiPath = StringUtils.startsWith(apiPath, "/") ? apiPath : "/" + apiPath;
+        return fixApiPrefix + fixApiPath;
+    }
+
     /**
      * copy
      *
@@ -74,8 +110,8 @@ public class ResolveUtils {
      * @throws IOException
      */
     public static int copy(Reader in, Writer out) throws IOException {
-        Args.notNull(in, "No Reader specified");
-        Args.notNull(out, "No Writer specified");
+        ArgsUtils.notNull(in, "No Reader specified");
+        ArgsUtils.notNull(out, "No Writer specified");
         try {
             int byteCount = 0;
             char[] buffer = new char[DEFAULT_BUFFER_SIZE];
@@ -109,8 +145,8 @@ public class ResolveUtils {
      * @throws IOException
      */
     public static int copy(InputStream in, OutputStream out) throws IOException {
-        Args.notNull(in, "No InputStream specified");
-        Args.notNull(out, "No OutputStream specified");
+        ArgsUtils.notNull(in, "No InputStream specified");
+        ArgsUtils.notNull(out, "No OutputStream specified");
         try {
             int byteCount = 0;
             byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
@@ -145,8 +181,8 @@ public class ResolveUtils {
      * @throws IOException
      */
     public static void copy(byte[] in, OutputStream out) throws IOException {
-        Args.notNull(in, "No input byte array specified");
-        Args.notNull(out, "No OutputStream specified");
+        ArgsUtils.notNull(in, "No input byte array specified");
+        ArgsUtils.notNull(out, "No OutputStream specified");
         try {
             out.write(in);
         } finally {
