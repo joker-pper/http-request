@@ -12,7 +12,7 @@
  - v1.0.1: 提供handler进行自定义解析结果(存在时不再默认填充body数据)或用于大文件的处理
  - v1.0.2: 提供callback可进行自定义增加或覆写client request config；支持postman bulk data数据解析
  - v1.0.3: Delete方法增加支持 formParameter 和 fileParameter
- - v1.0.4: PResponse增加clear方法、ZRequest增加close方法；提供全局设置default request config；提供全局设置default httpClient config callback；
+ - v1.0.4: PResponse增加clear方法、ZRequest增加close方法；提供全局/当前设置default request config进行统一设置默认参数；提供全局设置default httpClient config callback；
 
 > 引入方式
  
@@ -94,7 +94,25 @@ fileParameter    -> 非requestBody时添加(Post,Put,Patch,Delete)
 
 ```
 
-  提供全局设置default httpClientSupport config callback（v1.0.4）
+  提供当前ZRequest设置default request config，优先级大于全局设置default request config（v1.0.4）
+
+```
+   
+        ZRequest of(isIgnoreVerifySSL(boolean), RequestConfig.custom()
+                .setConnectTimeout(5000)
+                .setSocketTimeout(5000)
+                .setConnectionRequestTimeout(5000)
+                .build());
+                
+        ZRequest of(httpClient, RequestConfig.custom()
+                .setConnectTimeout(5000)
+                .setSocketTimeout(5000)
+                .setConnectionRequestTimeout(5000)
+                .build());
+
+```
+
+  提供全局设置default httpClientSupport config callback，只对默认提供的HttpClient实例生效（v1.0.4）
 
 ```
         HttpClientUtils.setDefaultHttpClientSupportConfigCallback(new HttpClientSupportConfigCallback() {

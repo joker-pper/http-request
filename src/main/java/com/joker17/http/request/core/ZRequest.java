@@ -30,9 +30,16 @@ public class ZRequest {
 
     private CloseableHttpClient httpClient;
     private CookieStore cookieStore;
+    private RequestConfig defaultRequestConfig;
 
     private ZRequest(CloseableHttpClient httpClient) {
         this.httpClient = httpClient;
+        this.defaultRequestConfig = null;
+    }
+
+    private ZRequest(CloseableHttpClient httpClient, RequestConfig defaultRequestConfig) {
+        this.httpClient = httpClient;
+        this.defaultRequestConfig = defaultRequestConfig;
     }
 
     /**
@@ -46,16 +53,38 @@ public class ZRequest {
     }
 
     /**
+     * 自定义httpClient并设置默认requestConfig
+     *
+     * @param httpClient
+     * @param defaultRequestConfig 默认requestConfig
+     * @return
+     */
+    public static ZRequest of(CloseableHttpClient httpClient, RequestConfig defaultRequestConfig) {
+        return new ZRequest(httpClient, defaultRequestConfig);
+    }
+
+    /**
      * 获取ZRequest对象
      *
      * @param isIgnoreVerifySSL 是否忽略验证ssl
      * @return
      */
     public static ZRequest of(boolean isIgnoreVerifySSL) {
+        return of(isIgnoreVerifySSL, null);
+    }
+
+    /**
+     * 获取ZRequest对象
+     *
+     * @param isIgnoreVerifySSL    是否忽略验证ssl
+     * @param defaultRequestConfig 默认requestConfig
+     * @return
+     */
+    public static ZRequest of(boolean isIgnoreVerifySSL, RequestConfig defaultRequestConfig) {
         if (isIgnoreVerifySSL) {
-            return of(HttpClientUtils.getIgnoreVerifySSLHttpClient());
+            return of(HttpClientUtils.getIgnoreVerifySSLHttpClient(), defaultRequestConfig);
         }
-        return of(HttpClientUtils.getDefaultHttpClient());
+        return of(HttpClientUtils.getDefaultHttpClient(), defaultRequestConfig);
     }
 
     /**
@@ -312,11 +341,16 @@ public class ZRequest {
      */
     @SuppressWarnings("rawtypes")
     protected <T> RequestConfig getRequestConfig(BaseRequestConfig<T> baseRequestConfig) {
-        RequestConfig defaultRequestConfig = HttpClientUtils.getDefaultRequestConfig();
+        //默认配置，优先取当前默认配置
+        RequestConfig defaultRequestConfig = this.defaultRequestConfig;
+        if (defaultRequestConfig == null) {
+            //全局默认配置
+            defaultRequestConfig = HttpClientUtils.getDefaultRequestConfig();
+        }
 
         RequestConfig.Builder builder;
         if (defaultRequestConfig != null) {
-            //支持从全局默认配置中copy
+            //支持从默认配置中copy
             builder = RequestConfig.copy(defaultRequestConfig);
         } else {
             builder = RequestConfig.custom();
