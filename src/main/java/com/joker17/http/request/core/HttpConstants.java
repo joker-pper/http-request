@@ -16,6 +16,15 @@ public class HttpConstants {
     public static final String SEMICOLON_STR = ";";
     public static final String EQUAL_SIGN_STR = "=";
 
+
+    public static final char QP_SEP_A_CHAR = '&';
+    public static final char PATH_SEPARATOR_CHAR = '/';
+
+    public static final String QP_SEP_A = QP_SEP_A_CHAR + "";
+
+    public static final String PATH_SEPARATOR =PATH_SEPARATOR_CHAR + "";
+
+
     public static final String WILDCARD = "*/*";
     public static final String TEXT_PLAIN = "text/plain";
     public static final String TEXT_XML = "text/xml";
@@ -28,7 +37,7 @@ public class HttpConstants {
 
     public static final ContentType DEFAULT_CONTENT_TYPE = ContentType.create(HttpConstants.APPLICATION_JSON, UTF_8);
 
-    public final static String[] USER_AGENTS = new String[] {
+    public final static String[] USER_AGENTS = new String[]{
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36",
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36 OPR/57.0.3098.106",
             "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.835.163 Safari/535.1",
@@ -39,7 +48,6 @@ public class HttpConstants {
             "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/13.0.782.41 Safari/535.1 QQBrowser/6.9.11079.201",
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.87 Safari/537.36"
     };
-
 
 
     public static final String HEAD_METHOD = "HEAD";

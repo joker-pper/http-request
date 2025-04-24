@@ -233,8 +233,10 @@ public class ZRequest {
         String url = requestConfig.getUrl();
         Charset requestCharset = getRequestCharset(requestConfig, HttpConstants.UTF_8);
         List<NameValuePair> queryParamList = ResolveUtils.getQueryParamList(requestConfig);
+        //获取是否使用UrlEncoded的方式格式化queryParamList  (注：不使用通过UrlEncoded的方式进行格式化一般是已经编码过的数据，无需再次UrlEncoded)
+        boolean paramsFormatWithUrlEncoded = !Boolean.TRUE.equals(requestConfig.getQueryParameterNotWithUrlEncoded());
         //设置请求url
-        requestBase.setURI(ResolveUtils.getURI(url, queryParamList, true, requestCharset));
+        requestBase.setURI(ResolveUtils.getURI(url, queryParamList, true, paramsFormatWithUrlEncoded, requestCharset));
         //设置请求头和超时时间等
         setHeaderAndRequestConfig(requestBase, requestConfig);
     }

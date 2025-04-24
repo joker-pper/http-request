@@ -258,21 +258,71 @@ public class ResolveUtils {
     }
 
     /**
-     * 当拼接参数时，将paramList进行放到url上，并返回URI对象
+     * 格式化url params (注：不使用通过UrlEncoded的方式进行格式化一般是已经确认无误的要使用的数据，无需再次UrlEncoded)
      *
-     * @param url
-     * @param paramList
-     * @param appendParams 是否拼接参数
-     * @param charset
+     * @param params               参数列表
+     * @param charset              编码
+     * @param formatWithUrlEncoded 是否通过UrlEncoded的方式进行格式化
      * @return
      */
-    public static URI getURI(String url, List<NameValuePair> paramList, boolean appendParams, Charset charset) {
+    public static String formatUrlParams(final List<NameValuePair> params, final Charset charset, boolean formatWithUrlEncoded) throws IOException {
+        if (params == null || params.isEmpty()) {
+            return "";
+        }
+
+        if (formatWithUrlEncoded) {
+            return EntityUtils.toString(new UrlEncodedFormEntity(params, charset));
+        }
+
+        StringBuilder builder = new StringBuilder();
+        for (NameValuePair nameValuePair : params) {
+            builder.append(nameValuePair.getName());
+            if (nameValuePair.getValue() != null) {
+                //存在值时 进行拼接 =xxx
+                builder.append(HttpConstants.EQUAL_SIGN_STR).append(nameValuePair.getValue());
+            }
+            //拼接 &
+            builder.append(HttpConstants.QP_SEP_A_CHAR);
+        }
+
+        int len = builder.length();
+        if (len > 0 && builder.charAt(len - 1) == HttpConstants.QP_SEP_A_CHAR) {
+            builder.deleteCharAt(len - 1);
+        }
+
+        return builder.toString();
+    }
+
+    /**
+     * 当拼接参数时，将params进行放到url上，并返回URI对象 （默认使用UrlEncoded的方式格式化参数）
+     *
+     * @param url          url
+     * @param params       参数列表
+     * @param appendParams 是否拼接参数
+     * @param charset      编码
+     * @return
+     */
+    public static URI getURI(String url, List<NameValuePair> params, boolean appendParams, Charset charset) {
+        return getURI(url, params, appendParams, true, charset);
+    }
+
+    /**
+     * 当拼接参数时，将params进行放到url上，并返回URI对象 （可控制是否使用UrlEncoded的方式格式化参数）
+     *
+     * @param url                        url
+     * @param params                     参数列表
+     * @param appendParams               是否拼接参数
+     * @param paramsFormatWithUrlEncoded 参数列表格式化时是否通过UrlEncoded的方式
+     * @param charset                    编码
+     * @return
+     */
+    public static URI getURI(String url, List<NameValuePair> params, boolean appendParams, boolean paramsFormatWithUrlEncoded, Charset charset) {
         if (url == null || url.isEmpty()) {
             throw new IllegalArgumentException("uri must not be empty.");
         }
-        if (appendParams && paramList != null && !paramList.isEmpty()) {
+        if (appendParams && params != null && !params.isEmpty()) {
             try {
-                String formParamsStr = EntityUtils.toString(new UrlEncodedFormEntity(paramList, charset));
+                String formParamsStr = formatUrlParams(params, charset, paramsFormatWithUrlEncoded);
                 url = resolveUrl(url, formParamsStr);
             } catch (IOException e) {
                 //ignore

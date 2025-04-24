@@ -70,6 +70,12 @@ public class BaseRequestConfig<T> implements Serializable {
      */
     private String cookieSpec;
 
+    /**
+     * 查询参数设置不使用url encoded (未设置为true时，则默认对queryParameterMap数据进行url encoded )
+     */
+    @Setter(value = AccessLevel.NONE)
+    private Boolean queryParameterNotWithUrlEncoded;
+
     @Setter(value = AccessLevel.NONE)
     private Boolean redirectsEnabled;
 

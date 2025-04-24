@@ -93,6 +93,56 @@ public class ResolveUtilsTest {
 
 
     @Test
+    public void testGetURI2() {
+        Map<String, List<String>> parameterMap = new LinkedHashMap<>(8);
+
+        parameterMap.put("username", Collections.singletonList("xxx"));
+        parameterMap.put("step", Collections.singletonList("2"));
+
+        assertEquals(URI.create("https://baidu.com?username=xxx&step=2"), ResolveUtils.getURI("https://baidu.com", ResolveUtils.getNameValuePairList(parameterMap), true, true, HttpConstants.UTF_8));
+        assertEquals(URI.create("https://baidu.com?username=xxx&step=2"), ResolveUtils.getURI("https://baidu.com?", ResolveUtils.getNameValuePairList(parameterMap), true, true, HttpConstants.UTF_8));
+        assertEquals(URI.create("https://baidu.com?age=xxx&step=2&username=xxx&step=2"), ResolveUtils.getURI("https://baidu.com?age=xxx&step=2", ResolveUtils.getNameValuePairList(parameterMap), true, true, HttpConstants.UTF_8));
+
+        assertEquals(URI.create("https://baidu.com?username=xxx&step=2"), ResolveUtils.getURI("https://baidu.com", ResolveUtils.getNameValuePairList(parameterMap), true, false, HttpConstants.UTF_8));
+        assertEquals(URI.create("https://baidu.com?username=xxx&step=2"), ResolveUtils.getURI("https://baidu.com?", ResolveUtils.getNameValuePairList(parameterMap), true, false, HttpConstants.UTF_8));
+        assertEquals(URI.create("https://baidu.com?age=xxx&step=2&username=xxx&step=2"), ResolveUtils.getURI("https://baidu.com?age=xxx&step=2", ResolveUtils.getNameValuePairList(parameterMap), true, false, HttpConstants.UTF_8));
+
+
+        //+ url编码后为 %2B
+        //空格 url编码后为 +
+        //: url编码后为 %3A
+        //, url编码后为 %2C
+
+
+        parameterMap.clear();
+        //这里空字符值进行url编码后为a=
+        //这里null值进行url编码后为a
+        parameterMap.put("a", Arrays.asList("", " ", null, "+", ":", ","));
+        assertEquals(URI.create("https://baidu.com?a=&a=+&a&a=%2B&a=%3A&a=%2C"), ResolveUtils.getURI("https://baidu.com", ResolveUtils.getNameValuePairList(parameterMap), true, true, HttpConstants.UTF_8));
+
+
+        parameterMap.clear();
+
+        parameterMap.put("username", Collections.singletonList("xxx"));
+        parameterMap.put("step", Collections.singletonList("2+"));
+        parameterMap.put("a", Arrays.asList(" ", "+", null));
+
+        assertEquals(URI.create("https://baidu.com?username=xxx&step=2%2B&a=+&a=%2B&a"), ResolveUtils.getURI("https://baidu.com", ResolveUtils.getNameValuePairList(parameterMap), true, true, HttpConstants.UTF_8));
+        assertEquals(URI.create("https://baidu.com?username=xxx&step=2%2B&a=+&a=%2B&a"), ResolveUtils.getURI("https://baidu.com?", ResolveUtils.getNameValuePairList(parameterMap), true, true, HttpConstants.UTF_8));
+        assertEquals(URI.create("https://baidu.com?age=xxx&step=2&username=xxx&step=2%2B&a=+&a=%2B&a"), ResolveUtils.getURI("https://baidu.com?age=xxx&step=2", ResolveUtils.getNameValuePairList(parameterMap), true, true, HttpConstants.UTF_8));
+
+
+        parameterMap.put("a", Arrays.asList("+", null));
+
+        assertEquals(URI.create("https://baidu.com?username=xxx&step=2+&a=+&a"), ResolveUtils.getURI("https://baidu.com", ResolveUtils.getNameValuePairList(parameterMap), true, false, HttpConstants.UTF_8));
+        assertEquals(URI.create("https://baidu.com?username=xxx&step=2+&a=+&a"), ResolveUtils.getURI("https://baidu.com?", ResolveUtils.getNameValuePairList(parameterMap), true, false, HttpConstants.UTF_8));
+        assertEquals(URI.create("https://baidu.com?age=xxx&step=2&username=xxx&step=2+&a=+&a"), ResolveUtils.getURI("https://baidu.com?age=xxx&step=2", ResolveUtils.getNameValuePairList(parameterMap), true, false, HttpConstants.UTF_8));
+
+
+    }
+
+
+    @Test
     public void transferSimplifyStringMap() {
         Map<String, List<String>> dataMap = new LinkedHashMap<>(16);
         dataMap.put(":method", Collections.singletonList("GET"));

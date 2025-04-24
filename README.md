@@ -98,13 +98,13 @@ fileParameter    -> 非requestBody时添加(Post,Put,Patch,Delete)
 
 ```
    
-        ZRequest of(isIgnoreVerifySSL(boolean), RequestConfig.custom()
+        ZRequest.of(isIgnoreVerifySSL(boolean), RequestConfig.custom()
                 .setConnectTimeout(5000)
                 .setSocketTimeout(5000)
                 .setConnectionRequestTimeout(5000)
                 .build());
                 
-        ZRequest of(httpClient, RequestConfig.custom()
+        ZRequest.of(httpClient, RequestConfig.custom()
                 .setConnectTimeout(5000)
                 .setSocketTimeout(5000)
                 .setConnectionRequestTimeout(5000)
