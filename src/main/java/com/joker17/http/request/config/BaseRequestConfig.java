@@ -119,6 +119,11 @@ public class BaseRequestConfig<T> implements Serializable {
         return (T) this;
     }
 
+    public T setQueryParameterNotWithUrlEncoded(boolean queryParameterNotWithUrlEncoded) {
+        this.queryParameterNotWithUrlEncoded = queryParameterNotWithUrlEncoded;
+        return (T) this;
+    }
+
     public T setRedirectsEnabled(boolean redirectsEnabled) {
         this.redirectsEnabled = redirectsEnabled;
         return (T) this;
