@@ -15,6 +15,7 @@ public class HttpConstants {
     public static final String CHARSET_STR = "CHARSET";
     public static final String SEMICOLON_STR = ";";
     public static final String EQUAL_SIGN_STR = "=";
+    public static final String EMPTY_STR = "";
 
 
     public static final char QP_SEP_A_CHAR = '&';
@@ -22,7 +23,7 @@ public class HttpConstants {
 
     public static final String QP_SEP_A = QP_SEP_A_CHAR + "";
 
-    public static final String PATH_SEPARATOR =PATH_SEPARATOR_CHAR + "";
+    public static final String PATH_SEPARATOR = PATH_SEPARATOR_CHAR + "";
 
 
     public static final String WILDCARD = "*/*";

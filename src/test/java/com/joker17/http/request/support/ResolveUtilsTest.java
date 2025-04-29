@@ -42,8 +42,12 @@ public class ResolveUtilsTest {
         assertEquals("https://baidu.com", ResolveUtils.getCorrectedApiPrefix("https://baidu.com"));
         assertEquals("https://baidu.com", ResolveUtils.getCorrectedApiPrefix("https://baidu.com/"));
         assertEquals("https://baidu.com", ResolveUtils.getCorrectedApiPrefix("https://baidu.com//"));
+        assertEquals("https://baidu.com", ResolveUtils.getCorrectedApiPrefix("https://baidu.com//  "));
+        assertEquals("https://baidu.com", ResolveUtils.getCorrectedApiPrefix("  https://baidu.com//  "));
         assertEquals("", ResolveUtils.getCorrectedApiPrefix("  "));
         assertEquals("", ResolveUtils.getCorrectedApiPrefix("//"));
+        assertEquals("", ResolveUtils.getCorrectedApiPrefix(" // "));
+        assertEquals("", ResolveUtils.getCorrectedApiPrefix("   //  "));
         assertEquals("", ResolveUtils.getCorrectedApiPrefix("    //"));
     }
 

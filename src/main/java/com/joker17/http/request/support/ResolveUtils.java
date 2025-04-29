@@ -51,7 +51,7 @@ public class ResolveUtils {
         index = 0;
         if (afterUrlParamArray != null && afterUrlParamArray.length > 0) {
             for (String afterUrlParam : afterUrlParamArray) {
-                if (afterUrlParam == null || "".equals(afterUrlParam.trim())) {
+                if (afterUrlParam == null || HttpConstants.EMPTY_STR.equals(afterUrlParam.trim())) {
                     continue;
                 }
                 builder.append(index == 0 ? "?" : "&").append(afterUrlParam);
@@ -67,22 +67,23 @@ public class ResolveUtils {
 
 
     /**
-     * 获取修正后的api前缀 （移除后面多余的/，如有多个也会被移除多次）,如果最终为空白字符将返回空字符串
+     * 获取修正后的api前缀 （会先进行trim，然后再移除后面多余的/，如有多个也会被移除多次）,如果最终为空白字符将返回空字符串
      *
      * @param apiPrefix api前缀  e.g: https://localhost  https://localhost:8080 https://localhost:8080/ https://localhost:8080/user
      * @return
      */
     public static String getCorrectedApiPrefix(String apiPrefix) {
         if (StringUtils.isBlank(apiPrefix)) {
-            return "";
+            //返回空字符串
+            return HttpConstants.EMPTY_STR;
         }
 
-        String result = apiPrefix;
-        while (result.endsWith("/")) {
+        String result = StringUtils.trim(apiPrefix);
+        while (result.endsWith(HttpConstants.PATH_SEPARATOR)) {
+            //末尾为/时
             result = result.substring(0, result.length() - 1);
         }
-        return result.trim();
-
+        return result;
     }
 
     /**
@@ -267,7 +268,7 @@ public class ResolveUtils {
      */
     public static String formatUrlParams(final List<NameValuePair> params, final Charset charset, boolean formatWithUrlEncoded) throws IOException {
         if (params == null || params.isEmpty()) {
-            return "";
+            return HttpConstants.EMPTY_STR;
         }
 
         if (formatWithUrlEncoded) {
