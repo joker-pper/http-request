@@ -7,15 +7,15 @@
     <groupId>io.github.joker-pper</groupId>
     <artifactId>http-request</artifactId>
     <version>1.0.4-SNAPSHOT</version>
-    <name>${project.artifactId}</name>
+    <name>http-request</name>
     <description>对httpclient进行一定封装,使一些常规请求操作使用起来更简单</description>
-    <url>http://github.com/joker-pper/http-request</url>
+    <url>https://github.com/joker-pper/http-request</url>
 
 
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
 
@@ -28,7 +28,7 @@
     <scm>
         <connection>scm:git:git://github.com/joker-pper/http-request.git</connection>
         <developerConnection>scm:git:ssh://github.com:joker-pper/http-request.git</developerConnection>
-        <url>http://github.com/joker-pper/http-request</url>
+        <url>https://github.com/joker-pper/http-request</url>
     </scm>
 
     <properties>
