@@ -55,7 +55,7 @@ public class HttpClientUtils {
                 }
             }).build();
             HttpClientBuilder builder = HttpClients.custom().setSSLContext(sslContext).
-                    setSSLHostnameVerifier(new NoopHostnameVerifier())
+                    setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
                     .setDefaultRequestConfig(getDefaultRequestConfig());
             HttpClientSupportConfigCallback clientConfigCallback = getDefaultHttpClientSupportConfigCallback();
             if (clientConfigCallback != null) {
