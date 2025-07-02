@@ -76,6 +76,12 @@ public class BaseRequestConfig<T> implements Serializable {
     @Setter(value = AccessLevel.NONE)
     private Boolean queryParameterNotWithUrlEncoded;
 
+    /**
+     * contentEncoding为br时获取text是否进行解码
+     */
+    @Setter(value = AccessLevel.NONE)
+    private Boolean brotliContentDecoderTextEnabled;
+
     @Setter(value = AccessLevel.NONE)
     private Boolean redirectsEnabled;
 
@@ -121,6 +127,11 @@ public class BaseRequestConfig<T> implements Serializable {
 
     public T setQueryParameterNotWithUrlEncoded(boolean queryParameterNotWithUrlEncoded) {
         this.queryParameterNotWithUrlEncoded = queryParameterNotWithUrlEncoded;
+        return (T) this;
+    }
+
+    public T setBrotliContentDecoderTextEnabled(boolean brotliContentDecoderTextEnabled) {
+        this.brotliContentDecoderTextEnabled = brotliContentDecoderTextEnabled;
         return (T) this;
     }
 

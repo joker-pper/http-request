@@ -12,7 +12,10 @@
  - v1.0.1: 提供handler进行自定义解析结果(存在时不再默认填充body数据)或用于大文件的处理
  - v1.0.2: 提供callback可进行自定义增加或覆写client request config；支持postman bulk data数据解析
  - v1.0.3: Delete方法增加支持 formParameter 和 fileParameter
- - v1.0.4: PResponse增加clear方法、ZRequest增加close方法；提供全局/当前设置default request config进行统一设置默认参数；提供全局设置default httpClient config callback；
+ - v1.0.4: PResponse增加clear方法、ZRequest增加close方法；提供全局/当前设置default request config进行统一设置默认参数；提供全局设置default httpClient config callback；  
+   增加RequestConfig参数:  
+     queryParameterNotWithUrlEncoded: 控制queryParameter是否通过UrlEncoded的方式进行格式化  
+     brotliContentDecoderTextEnabled: contentEncoding为br时获取text是否进行解码  
 
 > 引入方式
  

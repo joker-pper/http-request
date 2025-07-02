@@ -420,6 +420,7 @@ public class ZRequest {
             presponse.setUri(request.getURI());
             presponse.setStatusCode(response.getStatusLine().getStatusCode());
             presponse.setHttpResponse(response);
+            presponse.setBrotliContentDecoderTextEnabled(requestConfig.getBrotliContentDecoderTextEnabled());
 
             HttpEntity entity = response.getEntity();
             Header contentEncodingHeader = null;

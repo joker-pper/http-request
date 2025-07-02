@@ -17,6 +17,8 @@ public class HttpConstants {
     public static final String EQUAL_SIGN_STR = "=";
     public static final String EMPTY_STR = "";
 
+    public static final String BR_CONTENT_ENCODING = "br";
+
 
     public static final char QP_SEP_A_CHAR = '&';
     public static final char PATH_SEPARATOR_CHAR = '/';

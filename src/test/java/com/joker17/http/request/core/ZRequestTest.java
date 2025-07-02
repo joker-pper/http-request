@@ -15,10 +15,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -107,18 +104,25 @@ public class ZRequestTest {
     }
 
     @Test
-    public void test() throws IOException {
+    public void testGetWithBrotli() throws IOException {
         ZRequest request = ZRequest.of();
-        PResponse response = request.doGet(GetRequestConfig.of().setContentType("text/plain").setUrl("http://www.baidu.com")
-                .addQueryParameter("key", 1, 2, 3));
+        PResponse response = request.doGet(
+                GetRequestConfig.of()
+                        .setContentType("text/html")
+                        .addHeader("Accept-Encoding", "br")
+                        .setUrl("https://www.baidu.com")
+                        //未设置或者为false时会乱码
+                        .setBrotliContentDecoderTextEnabled(true)
+        );
         System.out.println(response);
-        System.out.println(response.getText(HttpConstants.UTF_8));
         System.out.println(request.getCookieStore());
 
         System.out.println(response.getHttpResponse());
         for (Header header : response.getHttpResponse().getAllHeaders()) {
             System.out.println(String.format("[Header] %s: %s", header.getName(), header.getValue()));
         }
+
+        System.out.println(response.getText(HttpConstants.UTF_8));
 
         //清理资源
         response.clear();
