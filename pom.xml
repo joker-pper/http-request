@@ -6,7 +6,7 @@
 
     <groupId>io.github.joker-pper</groupId>
     <artifactId>http-request</artifactId>
-    <version>1.0.4-SNAPSHOT</version>
+    <version>1.0.4</version>
     <name>http-request</name>
     <description>对httpclient进行一定封装,使一些常规请求操作使用起来更简单</description>
     <url>https://github.com/joker-pper/http-request</url>
