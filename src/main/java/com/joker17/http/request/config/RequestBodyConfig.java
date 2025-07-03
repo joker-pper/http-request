@@ -1,11 +1,9 @@
 package com.joker17.http.request.config;
 
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class RequestBodyConfig<T> extends BaseRequestConfig<T> {
 

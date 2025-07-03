@@ -1,10 +1,7 @@
 package com.joker17.http.request.config;
 
 import com.joker17.http.request.support.ValidateUtils;
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -13,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class RequestBodyAndFileConfig<T> extends RequestBodyConfig<T> {
 

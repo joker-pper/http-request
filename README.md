@@ -1,7 +1,7 @@
 
 > http-request  
 
-[![Java support](https://img.shields.io/badge/Java-7+-green?logo=java&logoColor=white)](https://openjdk.java.net/)
+[![Java support](https://img.shields.io/badge/Java-8+-green?logo=java&logoColor=white)](https://openjdk.java.net/)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.joker-pper/http-request.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=io.github.joker-pper:http-request)
 [![Last SNAPSHOT](https://img.shields.io/maven-metadata/v?metadataUrl=https://central.sonatype.com/repository/maven-snapshots/io/github/joker-pper/http-request/maven-metadata.xml&label=latest%20snapshot)](https://central.sonatype.com/repository/maven-snapshots/io/github/joker-pper/http-request/maven-metadata.xml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
